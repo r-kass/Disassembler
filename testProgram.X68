@@ -7,6 +7,7 @@
 
 
     ; MOVE commands
+    NOP
     MOVE.B  #$12,D0
     MOVE.B  D1,D0
     
@@ -31,6 +32,7 @@
 * Put variables and constants here
 
  
+
 
 *~Font name~Courier New~
 *~Font size~10~
