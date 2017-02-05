@@ -4,12 +4,16 @@
 * Date       :
 * Description:
 *-----------------------------------------------------------
-    ORG    $1000
+    ORG     $2000 ; this is where the test program will be loaded into memory
 START:                  ; first instruction of program
-
+    
+    INCLUDE 'testProgram.X68' ; run the testProgram Subroutine
+    
+    ORG     $1000 ; this is where the rest of the code will be loaded into memory
+MAIN
 * Put program code here
     LEA         EXIT,A2      ; exit will be replaced by the value given by user input 
-    MOVE.L      #$4F72,(A2)  ; loads the value of NOP into memory for testing purposes
+    MOVE.L      #$4E72,(A2)  ; loads the value of NOP into memory for testing purposes
     ; TODO: save the value of PC
     ; print the binary of the next command
     MOVE.L      (A2)+,D1     ; D1 now has the word opcode and A2 points any data associated with this command)
@@ -39,11 +43,16 @@ CONTINUE
     ; TODO: set A2 to value of pc, loop back to beginnin
     SIMHALT             ; halt simulator
 TAB     EQU     $09
-unknownMsg DC.B    TAB,TAB,'unknown',0
-NOPmsg  DC.B    TAB,TAB,'NOP',0
+
+unknownMsg  DC.B    TAB,TAB,'unknown',0
+NOPmsg      DC.B    TAB,TAB,'NOP',0
 * Put variables and constants here
 EXIT:
     END    START        ; last line of source
+
+
+
+
 
 
 
