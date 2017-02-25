@@ -20,7 +20,6 @@ LOOP:
     MOVE.B      #15,D0
     MOVE.B      #2,D2
     TRAP        #15          ; TODO print msb even if it's zero
-    
     ; compare value in D1.W to known opcodes TODO: this will need to be more sophisticated, and not take an entire word at a time
     CMP         #$4E71,D1
     BEQ         NOP
@@ -51,6 +50,7 @@ NOPmsg      DC.B    TAB,TAB,'NOP',0
 * Put variables and constants here
 EXIT:
     END    START        ; last line of source
+
 
 
 
