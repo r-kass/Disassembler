@@ -1,163 +1,36 @@
 *-----------------------------------------------------------
-* Title      : A disassembler
-* Written by : Jesse Llona, Ruby Kassal
-* Date       : I don't know the date. All I know now is assembly.
-* Description: It dissasbles things
+* Title      :
+* Written by :
+* Date       :
+* Description:
 *-----------------------------------------------------------
-    ORG     $2000 ; this is where the test program will be loaded into memory
+    ORG    $1000
 START:                  ; first instruction of program
-    BRA     MAIN
-    INCLUDE 'testProgram.X68' ; run the testProgram Subroutine
-    
-    ORG     $1000 ; this is where the rest of the code will be loaded into memory
-MAIN
-* Put program code here
-    LEA         AskInputS,A1
-    MOVE.B      #13,D0
-    TRAP        #15
-    
-    
-    ; get start location input
-    LEA         inputSpace,A1
-    MOVE.B      #2,D0
-    TRAP        #15
-    CMP.B       #8,D1
-    BNE         not8digits
 
-    MOVEA.L     A1,A3
-    MOVEA.L     A1,A2
-    ADDA.L      D1,A2
-    JSR         ASCII2HEXP1
-    MOVEA.L     A3,A1
-    JSR         ASCII2HEXP2
+; if code has a subcode (like ADD has ADDA) check for subcode (ADDA) first
+            
 
-    CMP.L       #$1000,D2
-    BLT         noStartOverlap
-    JSR         checkOverlap
+            ; opcode to decode here
+            
+            INCLUDE 'testProgram.X68'
+            CLR.L   D0
+            CLR.L   D1
+            CLR.L   D2
+            CLR.L   D3
+            CLR.L   D4
+            CLR.L   D5
+            CLR.L   D6
+            CLR.L   D7
+            MOVEA.L #0,A0
+            MOVEA.L #0,A1
+            MOVEA.L #0,A2
+            MOVEA.L #0,A3
+            MOVEA.L #0,A4
+            MOVEA.L #0,A5
+            MOVEA.L #0,A6
 
-noStartOverlap:    
-    MOVE.L      D2,A5     ; start decoding at user input
-    
-    LEA         AskInputE,A1
-    MOVE.B      #13,D0
-    TRAP        #15
-    
-    ; get end location input
-    LEA         inputSpace,A1
-    MOVE.B      #2,D0
-    TRAP        #15
-    CMP.B       #8,D1
-    BNE         not8digits
-
-    MOVEA.L     A1,A3
-    MOVEA.L     A1,A2
-    ADDA.L      D1,A2
-    JSR         ASCII2HEXP1
-    MOVEA.L     A3,A1
-    JSR         ASCII2HEXP2
-    
-    CMP.L       #$1000,D2
-    BLT         noEndOverlap
-    JSR         checkOverlap
-    
-noEndOverlap:    
-    ANDI.L      #$0000FFFF,D2
-    MOVE.L      D2,A3
-    MOVE.L      A5,A2
-    ; if input is invalad, JSR to message then `MAIN`          
-    CMP.L       A2,A3
-    BLT         startNotBeforeEnd
-    SUB.L       #2,A2
-    
-    LEA         newLine,A1
-    MOVE.B      #13,D0
-    TRAP        #15
-    
-    BRA         LOOP
-
-checkOverlap:
-    LEA      EXIT,A4
-    CMP.L    D2,A4
-    BGT      printOverlap
-    RTS      ; will using this as a subroutine cause errors if RTS isn't reached?
-
-printOverlap
-    MOVE.L  #$0,(SP)
-    LEA     overlapMsg,A1
-    MOVE.B  #14,D0
-    TRAP    #15
-    BRA     MAIN
-
-startNotBeforeEnd:
-    LEA        endb4start,A1
-    MOVE.B     #14,D0
-    TRAP       #15 
-    BRA        MAIN
-    
-not8digits:
-    LEA         wronglength,A1
-    MOVE.B      #13,D0
-    TRAP        #15
-    BRA         MAIN
-
-ASCII2HEXP1:      ; decodes ASCII data between A1 and A2 (not including the value at A2)
-    CMP.L       A1,A2
-    BLE         RETURN
-    
-    CMP.B       #$30,(A1)
-    BLT         InvalidHexNumber
-    CMP.B       #$46,(A1)
-    BGT         InvalidHexNumber
-    
-    CMP.B       #$39,(A1)
-    BGT         LT41check
-
-CONVERT:    
-    CMP.B       #$39,(A1)
-    BLE         SUB0x30
-    SUB.B       #$37,(A1)+
-    JSR         ASCII2HEXP1
-
-SUB0x30:
-    SUB.B       #$30,(A1)+
-    JSR         ASCII2HEXP1
-    
-RETURN:
-    RTS
-    
-LT41check:
-    CMP.B       #$41,(A1)
-    BLT         InvalidHexNumber
-    BRA         CONVERT
-
-InvalidHexNumber:
-    LEA         InvalidHex,A1
-    MOVE.B      #13,D0
-    TRAP        #15
-    BRA         MAIN    
-    
-ASCII2HEXP2:
-    ADD.B      (A1)+,D2 
-    CMP.L       A1,A2
-    BLE         RETURN
-    LSL.L       #4,D2
-    BRA         ASCII2HEXP2
-    
-LOOP:
-    ADDA.L      #$2,A2 ; this is assuming we load user input's start location -2 into A2 the first time
-    
-    ; check loop conditions
-    CMP         A3,A2    ; change #$207C to end address GET RID OF ()+ ONCE WE HAVE EA
-    BGE         EXIT  
-    
-    ; print the binary of the next command
-    MOVE.W      (A2),D1
-    MOVE.B      #15,D0
-    MOVE.B      #16,D2
-    TRAP        #15          ; TODO print msb even if it's zero
-
-
-    BRA         DECODE
+            ;CMP.L     D2,D3
+            MOVE.W    #$1000,A2      ; loads the instruction opcode into (A2) ($1000 because the ORG is $1000)
 DECODE:          
             ; check RTS and NOP
             MOVE.W  (A2),D2           ; decode in D2
@@ -187,22 +60,19 @@ DECODE:
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$F1C0,D2
             CMP.W   #$80C0,D2
-            BEQ     printDIVU
-            
+            BEQ     verifyDIVU
 afterDIVU:
             ; check MULS
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$F1C0,D2
             CMP.W   #$C1C0,D2
-            BEQ     printMULS
-
+            BEQ     verifyMULS
 afterMULS:
             ; check LEA
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$F1C0,D2
             CMP.W   #$41C0,D2
-            BEQ     printLEA
-
+            BEQ     verifyLEA
 afterLEA:
             ; check MOVEQ
             MOVE.W  (A2),D2           ; decode in D2
@@ -215,7 +85,7 @@ afterLEA:
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$FB80,D2
             CMP.W   #$4880,D2
-
+            BEQ     verifyMOVEM
 afterMOVEM:
             ; check MOVEA   movea if 00xx xxx0 01xx xxxx
             MOVE.W  (A2),D2           ; decode in D2
@@ -226,8 +96,7 @@ afterMOVEM:
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$C1C0,D2
             CMP.W   #$0040,D2
-            BEQ     printMOVEA
-
+            BEQ     verifyMOVEA     
 afterMOVEA:
             ; check MOVE move if 00xx xxxx xxxx xxxx        NEEDS TO BE AFTER MOVEA
             MOVE.W  (A2),D2           ; decode in D2
@@ -324,13 +193,11 @@ afterMOVE:
             CMP.W   #$B000,D2
             BEQ     printCMP
             
-            
-printUNKNOWN:
-            LEA     UNKNOWNmsg,A1
-            MOVE.B  #13,D0
-            TRAP    #15
-            BRA     LOOP            
-            
+continue:
+            ADDA.W  #2,A2
+            BRA     DECODE
+            BRA     EXIT
+
 printCMP:
             LEA     CMPmsg,A1
             MOVE.B  #14,D0
@@ -344,9 +211,8 @@ printCMP:
             CMP.W   #$0040,D2
             BEQ     printW
             BRA     printL
-            
 
-            
+        
 printAND:
             LEA     ANDmsg,A1
             MOVE.B  #14,D0
@@ -565,29 +431,29 @@ printMovem:
 
 printMoveq:
             LEA     MOVEQmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #15,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     continue
 
 printLEA:
             LEA     LEAmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     continue
 
 printMuls:
             LEA     MULSmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #15,D0
             TRAP    #15
             
-            BRA     LOOP
+            BRA     continue
 
 printDivu:
             LEA     DIVUmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #15,D0
             TRAP    #15
             
-            BRA     LOOP
+            BRA     continue
 
 printClr:
             LEA     CLRmsg,A1
@@ -596,37 +462,41 @@ printClr:
             
             ; decode size
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
+            LSL.W   #8,D2
+            LSR.W   #8,D2
+            LSR.W   #6,D2
+            CMP.B   sizeLmask,D2
+            BEQ     printL  
+            CMP.B   sizeWmask,D2
             BEQ     printW
-            CMP.W   #$0080,D2
-            BEQ     printL
+            CMP.B   sizeBmask,D2
+            BEQ     printB
+ 
 
+            BRA     continue
 printBcc:
             LEA     Bccmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     continue       
          
 printJsr:
             LEA     JSRmsg,A1
             MOVE.B  #13,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     continue         
          
 printNop:
             LEA     NOPmsg,A1
             MOVE.B  #13,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     continue
    
 printRts:
             LEA     RTSmsg,A1
             MOVE.B  #13,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     continue
 
 printMovea:
             LEA     MOVEAmsg,A1
@@ -643,78 +513,153 @@ printMovea:
             CMP.B   #2,D2
             BEQ     printL
             
-
+            BRA     continue
 
 printL:
             LEA     Lmsg,A1
             MOVE.B  #13,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     continue
             
 printW:
             LEA     Wmsg,A1
             MOVE.B  #13,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     continue
             
 printB:
             LEA     Bmsg,A1
             MOVE.B  #13,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     continue
+verifyMOVEA:
+            MOVE.W  (A2),D2           ; decode in D2
+            LSR.W   #2,D2
+            ANDI.B  #$10,D2
+            CMP.B   #$10,D2
+            BEQ     printMovea
+            BRA     afterMOVEA 
+
+            
+verifyMOVEM:
+            MOVE.W  (A2),D2           ; decode in D2
+            LSR.W   #3,D2
+            ANDI.B  #$10,D2
+            CMP.B   #$10,D2
+            BEQ     printMovem
+            BRA     afterMOVEM 
+         
+verifyLEA:
+            MOVE.W  (A2),D2           ; decode in D2
+            LSL.W   #7,D2
+            LSR.W   #7,D2
+            ANDI.W  #$01C0,D2
+            CMP.W   #$01C0,D2
+            BEQ     printLEA
+            BRA     afterLEA
+         
+verifyMULS:
+            MOVE.W  (A2),D2           ; decode in D2
+            LSL.W   #7,D2
+            LSR.W   #7,D2
+            ANDI.W  #$01C0,D2
+            CMP.W   #$01C0,D2
+
+            BEQ     printMuls
+            BRA     afterMULS
 
 
-HT          EQU     $09
-CR          EQU     $0D
-LF          EQU     $0A
+         
+verifyDIVU:
+            MOVE.W  (A2),D2           ; decode in D2
+            LSL.W   #7,D2
+            LSR.W   #7,D2
+            ANDI.W  #$00C0,D2
+            CMP.W   #$00C0,D2
+            BEQ     printDivu
+            BRA     afterDIVU
 
-AskInputS       DC.B    'Input the 8 digit address of first command in hexadecimal:',CR,LF,0
-AskInputE       DC.B    'Input the 8 digit address of last command:',CR,LF,0
-InvalidHex      DC.B    'Invalid hexidecimal number, try again.',CR,LF,'(TIP: use all caps for letters)',CR,LF,0
-endb4start      DC.B    'End address is not after start address, try again.',CR,LF,0
-wronglength     DC.B    'Input was not 8 digits, try again.',CR,LF,'(TIP: add leading 0s if needed)',CR,LF,0
-overlapMsg      DC.B    'This overlaps with the disassembler, try again.',CR,LF,0
-newLine         DC.B    CR,LF,0
 
-Lmsg        DC.B    'L',CR,LF,0
-Wmsg        DC.B    'W',CR,LF,0
-Bmsg        DC.B    'B',CR,LF,0
 
-UNKNOWNmsg  DC.B    HT,'INVALED',CR,LF,0
-ADDQmsg     DC.B    HT,'ADDQ.',0
-ADDImsg     DC.B    HT,'ADDI.',0
-MOVEAmsg    DC.B    HT,'MOVEA.',0
-ADDAmsg     DC.B    HT,'ADDA.',0
-MOVEMmsg    DC.B    HT,'MOVEM.',0
-MOVEQmsg    DC.B    HT,'MOVEQ',CR,LF,0
-MULSmsg     DC.B    HT,'MULS',CR,LF,0
-DIVUmsg     DC.B    HT,'DIVU',CR,LF,0
-LEAmsg      DC.B    HT,'LEA',CR,LF,0
-CMPmsg      DC.B    HT,'CMP.',0
-CLRmsg      DC.B    HT,'CLR.',0
-ANDmsg      DC.B    HT,'AND.',0
-ORmsg       DC.B    HT,'OR.',0
-ADDmsg      DC.B    HT,'ADD.',0
-SUBmsg      DC.B    HT,'SUB.',0
-MOVEmsg     DC.B    HT,'MOVE.',0
-LSRmsg      DC.B    HT,'LSR.',0
-LSLmsg      DC.B    HT,'LSL.',0
-ASRmsg      DC.B    HT,'ASR.',0
-ASLmsg      DC.B    HT,'ASL.',0
-RORmsg      DC.B    HT,'ROR.',0
-ROLmsg      DC.B    HT,'ROL.',0
-Bccmsg      DC.B    HT,'Bcc',CR,LF,0
-JSRmsg      DC.B    HT,'JSR',CR,LF,0
-RTSmsg      DC.B    HT,'RTS',CR,LF,0
-NOPmsg      DC.B    HT,'NOP',CR,LF,0
+    SIMHALT             ; halt simulator
 
-inputSpace  DC.B    '',0            ; don't put any variables after this. or anything at all. IT'S IMPORTANT THAT THIS IS THE END, OK!?!?!?
+* Put variables and constants here
+;unsure
+ADDQmask    DC.W    $5000   
+MOVEAmask   DC.W    $0040
+ADDAmask    DC.W    $D0C0
+MOVEMmask   DC.W    $4880
+MOVEQmask   DC.W    $7000
+MULSmask    DC.W    $C1C0    
+DIVUmask    DC.W    $80C0
+LEAcode     DC.W    $41C0
+
+;sure
+CMPmask     DC.W    $B000
+CLRcode     DC.W    $4200
+ANDmask     DC.W    $C000
+ORmask      DC.W    $8000
+ADDmask     DC.W    $D000
+ADDImask    DC.W    $0600
+SUBmask     DC.W    $9000
+MOVEmask    DC.W    $0000
+LSRmask     DC.W    $E2C0
+LSLmask     DC.W    $E3C0
+ASRmask     DC.W    $E0C0
+ASLmask     DC.w    $E1C0
+RORcode     DC.W    $E400
+ROLcode     DC.W    $E500
+Bcccode     DC.W    $6000
+JSRcode     DC.W    $4E80
+RTScode     DC.W    $4E75
+NOPcode     DC.W    $4E71
+
+sizeLmask   DC.B    $2            
+sizeWmask   DC.B    $1
+sizeBmask   DC.B    $0
+
+smallSizeW  DC.B    $0
+smallSizeL  DC.B    $1
+
+moveSizeL   DC.B    $2
+moveSizeW   DC.B    $3
+moveSizeB   DC.B    $1
+
+  
+;strings
+Lmsg        DC.B    'L',0
+Wmsg        DC.B    'W',0
+Bmsg        DC.B    'B',0
+
+ADDQmsg     DC.B    'ADDQ.',0
+ADDImsg     DC.B    'ADDI.',0
+MOVEAmsg    DC.B    'MOVEA.',0
+ADDAmsg     DC.B    'ADDA.',0
+MOVEMmsg    DC.B    'MOVEM.',0
+MOVEQmsg    DC.B    'MOVEQ',0
+MULSmsg     DC.B    'MULS',0
+DIVUmsg     DC.B    'DIVU',0
+LEAmsg      DC.B    'LEA',0
+CMPmsg      DC.B    'CMP.',0
+CLRmsg      DC.B    'CLR.',0
+ANDmsg      DC.B    'AND.',0
+ORmsg       DC.B    'OR.',0
+ADDmsg      DC.B    'ADD.',0
+SUBmsg      DC.B    'SUB.',0
+MOVEmsg     DC.B    'MOVE.',0
+LSRmsg      DC.B    'LSR.',0
+LSLmsg      DC.B    'LSL.',0
+ASRmsg      DC.B    'ASR.',0
+ASLmsg      DC.B    'ASL.',0
+RORmsg      DC.B    'ROR.',0
+ROLmsg      DC.B    'ROL.',0
+Bccmsg      DC.B    'Bcc',0
+JSRmsg      DC.B    'JSR',0
+RTSmsg      DC.B    'RTS',0
+NOPmsg      DC.B    'NOP',0
 
 EXIT:
     END    START        ; last line of source
-
-
-
 
 
 
