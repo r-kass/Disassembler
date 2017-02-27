@@ -75,19 +75,19 @@ EADECLOOP
 *
 
 
-*EAMODE000: ------- Data register direct : send data directly to buffer -------------
+EAMODE000: *------- Data register direct : send data directly to buffer -------------
         MOVE     D2, D1
         ANDI     #$111, D0     ; compares to 111 to get register value
         BSR      bufferMessanger  :send data??? i think this is I/O stuff 
         RTS 
         
-*EAMODE001: ------- Address register direct : send address register to buffer -------
+EAMODE001: *------- Address register direct : send address register to buffer -------
         MOVE     D2, D1
         ANDI     #$111, D0     ; compares to 111 to get register value
         BSR      bufferMessanger  :send data??? i think this is I/O stuff 
         RTS 
 
-*EAMODE010: --------- Address register indirect: sends address value ----------------
+EAMODE010: *--------- Address register indirect: sends address value ----------------
 
         ; TODO take care of first parenthesis
         
@@ -100,7 +100,7 @@ EADECLOOP
         RTS 
 
 
-*EAMODE011: --------- Address register indirect with post increment ----------------
+EAMODE011: * --------- Address register indirect with post increment ----------------
 
         ; TODO take care of first parenthesis
         
@@ -114,7 +114,7 @@ EADECLOOP
         
         RTS 
 
-*EAMODE100: --------- Address register indirect with pre decrement ---------------
+EAMODE100: *--------- Address register indirect with pre decrement ---------------
 
         ; TODO take care of minus sign
         
@@ -129,7 +129,48 @@ EADECLOOP
         RTS 
 
 
-*EAMODE101:
+EAMODE101: *----------  Address register indirect with displacement -----------------
+        ; TODO get dollar sign
+        
+        ; TODO: how to get 8-bit extension word?
+        MOVE.L  D1, D3       ; place in D3
+        CLR.L   D4
+        MOVE.B  #4, D4       ; store number of bytes 
+        
+        ; TODO convert to ASCII - branch??
+        ; TODO move hex value to address reg
+        ; TODO store hex to buffer
+        
+        ;TODO get open parentheses
+        
+        ;store address in buffer
+        MOVE     D2, D1
+        ANDI     #$111, D0     ; compares to 111 to get register value
+        BSR      bufferMessanger  :send data??? i think this is I/O stuff 
+
+        ;TODO get comma sign
+        
+        ; get index register
+        MOVE.L   D5, D1         ; store value in D1- TODO check if D5 is correct
+        ANDI     #$F000, D1     ; get first byte only to evaluate
+        ASL.L    #$1000, D1     ; shift to the farthest right
+        ASL.L    #$0100, D1     ; get first bit
+        ;TODO send byte to buffer
+     
+        ;TODO see if word or long
+        MOVE.L   D5, D1 
+        ANDI     #$0F00, D1     ; get byte that represents size
+        ASL.L    #$1000, D1     ; shift to farthest right
+        CMPI.B   #
+        
+        
+        
+        ;TODO get close parentheses
+        
+
+    
+
+
 
 *EAMODE110:
 
@@ -157,7 +198,7 @@ EADECLOOP
 
 *ERROR ???????????
 *BUFFERMESSENGER ???????????
-
+*SYMBOLS? ?????????????????????????????????????? ???
 
 
 * Put variables and constants here
