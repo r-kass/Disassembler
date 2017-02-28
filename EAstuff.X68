@@ -21,7 +21,7 @@ START:                  ; first instruction of program
         MOVE.L  D0, D2      ; get copy of all 6 bits
         ASR.W   #3, D2      ; bits shifted out to focus on 3 bits
 
- loop to compare to all eamodes
+* loop to compare all eamodes
 
 EADECLOOP
        LEA    #$0, A1   ; counter for loop
@@ -52,10 +52,7 @@ EADECLOOP
        BRA     EADECLOOP
 
 
-
-
 * -------------- EA MODES AND REGISTERS ---------------
-* I guess i don't need these anymore.... idk
 *EAMODES
 *
 *       JMP      EAMODE000  ; Data register direct
@@ -65,7 +62,7 @@ EADECLOOP
 *       JMP      EAMODE100  ; Address register indirect with predecrement
 *       JMP      EAMODE101  ; Address register indirect with displacement
 *       JMP      EAMODE110  ; Address register indirect with index [8-bit, base]
-*                            ; Memory indirect [postindexed, preindexed]
+*                           ; Memory indirect [postindexed, preindexed]
 *       JMP      EAMODE111  ; Absolute data addressing [short, long]
 *
 *EAREGISTERS
@@ -90,47 +87,57 @@ EAMODE001: *------- Address register direct : send address register to buffer --
 EAMODE010: *--------- Address register indirect: sends address value ----------------
 
         ; TODO take care of first parenthesis
+         *** MOVE.W  #PARENTHESIS_1, ??
+
         
         MOVE     D2, D1
         ANDI     #$111, D0     ; compares to 111 to get register value
         BSR      bufferMessanger  :send data??? i think this is I/O stuff 
 
         ; TODO take care of last perenthesis
-        
+         *** MOVE.W  #PARENTHESIS_2, ??
+
         RTS 
 
 
 EAMODE011: * --------- Address register indirect with post increment ----------------
 
         ; TODO take care of first parenthesis
-        
+         *** MOVE.W  #PARENTHESIS_1, ??
+
         MOVE     D2, D1
         ANDI     #$111, D0     ; compares to 111 to get register value
         BSR      bufferMessanger  :send data??? i think this is I/O stuff 
 
         ; TODO take care of last perenthesis
-        
+         *** MOVE.W  #PARENTHESIS_2, ??
+
         ; TODO take care of plus sign
-        
+         *** MOVE.W  #PLUS_SIGN, ??
+
         RTS 
 
 EAMODE100: *--------- Address register indirect with pre decrement ---------------
 
         ; TODO take care of minus sign
+         *** MOVE.W  #MINUS_SIGN, ??
         
         ; TODO take care of first parenthesis
-        
+         *** MOVE.W  #PARENTHESIS_1, ??
+
         MOVE     D2, D1
         ANDI     #$111, D0     ; compares to 111 to get register value
         BSR      bufferMessanger  :send data??? i think this is I/O stuff 
 
         ; TODO take care of last perenthesis
-        
+         *** MOVE.W  #PARENTHESIS_2, ??
+
         RTS 
 
 
 EAMODE101: *----------  Address register indirect with displacement -----------------
         ; TODO get dollar sign
+        *** MOVE.W  #DOLLAR_SIGN, ??
         
         ; TODO: how to get 8-bit extension word?
         MOVE.L  D1, D3       ; place in D3
@@ -142,7 +149,8 @@ EAMODE101: *----------  Address register indirect with displacement ------------
         ; TODO store hex to buffer
         
         ;TODO get open parentheses
-        
+        *** MOVE.W  #PARENTHESIS_1, ??
+
         ;store address in buffer
         MOVE     D2, D1
         ANDI     #$111, D0     ; compares to 111 to get register value
@@ -161,51 +169,95 @@ EAMODE101: *----------  Address register indirect with displacement ------------
         MOVE.L   D5, D1 
         ANDI     #$0F00, D1     ; get byte that represents size
         ASL.L    #$1000, D1     ; shift to farthest right
-        CMPI.B   #
+        CMPI.B   #0, D1         ; compare to see if the length is word
+        ; TODO store in buffer??
+        *** BEQ     ???
+*        ; TODO what to do if other size? flag?
         
+        ;TODO ADD DATA TYPES TO BUFFER
         
         
         ;TODO get close parentheses
-        
+        *** MOVE.W  #PARENTHESIS_2, ??
 
+
+*EAMODE110: *-------Address reg indirect with index [8-bit, base];Memory indirect [postindexed, preindexed] ---
     
-
-
-
-*EAMODE110:
-
+    ; i dont think i need these? idk
     *8BIT  ;branch
-
     *BASE  ;branch
-    
     *MIPOSTINDEX    ;branch
-    
     *MIPREINDEX     ;branch
-
+    
 *EAMODE111: 
 
     *ADSHORT ;branch
 
     *ADLONG ;branch
     
+    
+    
+    
+    
+    
 *EAREG000:
 
-    *SHORT ;branch
+    *WORD ;branch
 
     *LONG ;branch
 
+
+    ; TODO STACK POINTER?
+    
+    ; TODO get dollar sign
+        *** MOVE.W  #DOLLAR_SIGN, ??
+    
+    ; TODO get word data, back up to D4
+    
+    CLR.L   D3      
+    MOVE.B  #4, D3  ; get length of hex value
+    ;TODO convert to ASCII
+    
+    
+    ;TODO add to buffer
+    
+    ; pop from stack pointer
+    
+    RTS
+    
+
+
 *EAREG100 
 
-*ERROR ???????????
-*BUFFERMESSENGER ???????????
-*SYMBOLS? ?????????????????????????????????????? ???
 
+
+
+
+
+
+
+
+*ERROR HANDLING?
+*BUFFERMESSENGER?
+
+
+
+
+
+*---------------------- Symbols ----------------------------
+
+PARENTHESIS_1       DC.B        '(', 0
+PARENTHESIS_2       DC.B        ')', 0
+PLUS_SIGN           DC.B        '+', 0
+MINUS_SIGN          DC.B        '-', 0
+COMMA               DC.B        ',', 0
+DOLLAR_SIGN         DC.B        '$', 0
 
 * Put variables and constants here
 
     END    START        ; last line of source
 
-
+    
 
 *~Font name~Courier New~
 *~Font size~10~
