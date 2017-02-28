@@ -2,9 +2,10 @@
 * Title      : EA stuff
 * Written by :
 * Date       :
-* Description: right now, does not handle data from RTS, NOP, MOVEQ
-* ADDI, MOVEM, Bcc?
-* 
+* Description: right now, does not handle data from RTS, NOP, Bcc
+* ADDI, MOVEM?
+* MOVEQ?
+*
 * Key for edits:
 *   - assumptions made: **************assumption*************
 *   - to complete: 
@@ -32,11 +33,10 @@
 
 *-----------------------------------------------------------
     ORG    $1000
+    
 START:                  ; first instruction of program
 
-* Put program code here
-
-DECODEEASIMPLE: * -----------------Decode recieved 6 bits ----------------
+DECODEEASIMPLE: * --------------Decode recieved 6 bits ----------------
         ; for all except RTS, NOP, MOVEQ, ADDI, MOVEM, Bcc
         ; data curently in (A2)
         
@@ -52,7 +52,7 @@ DECODEEASIMPLE: * -----------------Decode recieved 6 bits ----------------
         ; register is now in D2
 
 *TODO
-*DECODEEASPECIAL:
+*DECODEEASPECIAL: FOR STRANGE CASES
 
 EADECMODE: *--------------Loop to compare all EAModes-----------------
 
@@ -126,11 +126,11 @@ EAMODE011: * --------- Address register indirect with post increment -----------
         MOVE.B  #14,D0
         TRAP    #15   
 
-        LEA #PARENTHESIS_2, A1
+        LEA     #PARENTHESIS_2, A1
         MOVE.B  #14,D0
         TRAP    #15    
 
-        LEA  #PLUS_SIGN, A1
+        LEA     #PLUS_SIGN, A1
         MOVE.B  #14,D0
         TRAP    #15    
 
@@ -225,13 +225,13 @@ EAMODE111: * ------------ Absolute short, long ---------------------------------
       CMP.B   #%001, D2
       BEQ     001LONG
       CMP.B   #%011, D2
-      RTS        
+      BEQ     RTS        
       CMP.B   #%101, D2
-      RTS
+      BEQ     RTS
       CMP.B   #%110, D2
-      RTS
+      BEQ     RTS
       CMP.B   #%111, D2
-      RTS
+      BEQ     RTS
     
 100IMMED ; branch
       LEA     #POUND, A1
