@@ -43,8 +43,9 @@ DECODEEASIMPLE: * --------------Decode recieved 6 bits ----------------
         CLR.W   D1
         MOVE.W  (A2),D1      ; get copy of all 16 bits
         MOVE.W  (A2),D2
-        LSL.W   #10, D1       ; bits shifted out to focus on bits 11-13
         LSR.W   #3, D1
+        LSL.W   #13, D1       ; bits shifted out to focus on bits 11-13
+      
         BRA     EADECMODE
         LSL.W   #13, D2       ; bits shifted out to focus on last 3 bits
         
@@ -86,11 +87,11 @@ EADECMODE: *--------------Loop to compare all EAModes-----------------
        BRA     EADECLOOP
 
 
-EAMODE000: *------- Data register direct -------------
+EAMODE000: *-------------------- Data register direct -------------------------------
         LEA     D1, A1
         MOVE.B  #14,D0
         TRAP    #15   
-        RTS
+        RTS ; doesn't work with beq, use BRA (right before your addi above)
         
 EAMODE001: *------- Address register direct : send address register to buffer -------
         LEA     D1, A1
