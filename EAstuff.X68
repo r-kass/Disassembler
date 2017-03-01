@@ -2,7 +2,8 @@
 * Title      : EA stuff
 * Written by :
 * Date       :
-* Description: right now, does not handle data from RTS, NOP, Bcc
+* Description: right now, does not handle data from RTS
+* NOP, Bcc
 * ADDI, MOVEM?
 * MOVEQ?
 *
@@ -11,7 +12,7 @@
 *   - to complete: 
 *
 *   will be called from print functions in Opcode to be handled
-*   differently (specifically for RTS, NOP, MOVEQ)
+*   differently (specifically for BRA, NOP, MOVEQ)
 *
 *EAMODES
 *
@@ -28,26 +29,37 @@
 *EAREGISTERS
 *
 *       JMP      EAREG000   ; Absolute data addressing [short, long]
-*       JMP      EAREG100   ; Immediate addressing
-*
-
-*-----------------------------------------------------------
+*       JMP      EAREG100   ; Immediate add-----------------
     ORG    $1000
     
-START:                  ; first instruction of program
+START:                    ; first instruction of program
+    MOVE.W  #$0007, LLA   ; TEMPORARY EA CODE
+    LEA     LLA, A2       ; load the address pointer
+    MOVEA.L #$01000000,A7 ; init the stack pointer
+    JSR     DECODEEA
+    SIMHALT
+    
+LLA DS.W   1           ; store the EA code here
+
+DECODEEA:
+    MOVEM.L D0-D7/A1/A3-A6,-(A7) ; back up all the things
+
 
 DECODEEASIMPLE: * --------------Decode recieved 6 bits ----------------
-        ; for all except RTS, NOP, MOVEQ, ADDI, MOVEM, Bcc
+        ; for all except BRA, NOP, MOVEQ, ADDI, MOVEM, Bcc
         ; data curently in (A2)
         
         CLR.W   D1
         MOVE.W  (A2),D1      ; get copy of all 16 bits
-        MOVE.W  (A2),D2
-        LSR.W   #3, D1
-        LSL.W   #13, D1       ; bits shifted out to focus on bits 11-13
-      
+        MOVE.W  (A2),D2      ; copy for register bits 
+
+        ANDI.L #$0038, D1    ; bitmask thingy
+        LSR.L  #3, D1        ; shifting by three bits for the mode
+        ANDI.L #$0007, D2    ; bitmask thingy
+
         BRA     EADECMODE
-        LSL.W   #13, D2       ; bits shifted out to focus on last 3 bits
+*       LSL.W   #13, D2      ; bits shifted out to focus on last 3 bits
+
         
         ; mode is now in D1
         ; register is now in D2
@@ -59,195 +71,151 @@ EADECMODE: *--------------Loop to compare all EAModes-----------------
 
 ************* assumes A1 is available ********************
 
-       LEA    #$0, A1   ; counter for loop
-       CMP    D1, #%0000000000000000
+       MOVE.L  #$0, D4   ; counter for loop
+       CMP    #%000, D1
        BEQ    EAMODE000
 
-       CMP    D1, #%0010000000000000
+       CMP    #%001, D1
        BEQ    EAMODE001
         
-       CMP    D1, #%0100000000000000
+       CMP    #%010, D1
        BEQ    EAMODE010
        
-       CMP    D1, #%0110000000000000
+       CMP    #%011, D1
        BEQ    EAMODE011
 
-       CMP    D1, #%1000000000000000
+       CMP    #%100, D1
        BEQ    EAMODE100
 
-       CMP    D1, #%1010000000000000
-       BEQ    EAMODE101
+      * CMP    #%101, D1
+      * BEQ    EAMODE101
 
-       CMP    D1, #%1110000000000000
+       CMP    #%111, D1
        BEQ    EAMODE111
 
-       ADDI.B  #$1, A1    ; increment counter
-       CMPI    #$7,A1     ; break loop here 
-       BEQ     ERROR      ; TODO
-       BRA     EADECLOOP
+       ADD.L   #$1, D4    ; increment counter
+       CMPI.L  #$7, D4    ; break loop here 
+   *   BEQ     EAERROR    ; TODO ******************PUT THIS BACK *****************************
+       BRA     EADECMODE
 
 
 EAMODE000: *-------------------- Data register direct -------------------------------
-        LEA     D1, A1
+        LEA     DATA_REG, A1
         MOVE.B  #14,D0
-        TRAP    #15   
-        RTS ; doesn't work with beq, use BRA (right before your addi above)
+        TRAP    #15
+
+        MOVE.L   D2, BIN2A_VAL   ; put register value in conversion subroutine
+        MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
+        JSR      CONVERTTOASCII
+        LEA      BIN2A_BUFFER, A1
+        MOVE.B   #14,D0
+        TRAP     #15
+
+        BRA EAEXIT                    ; branch to exit   
+ ; doesn't work with beq, use BRA (right before your addi above)
         
 EAMODE001: *------- Address register direct : send address register to buffer -------
-        LEA     D1, A1
+     *   LEA     D1, A1
         MOVE.B  #14,D0
         TRAP    #15   
-        RTS
+        BRA EAEXIT                    ; branch to exit   
+
 
 EAMODE010: *--------- Address register indirect: sends address value ----------------
 
-        LEA     #PARENTHESIS_1, A1
+        LEA     PARENTHESIS_1, A1
         MOVE.B  #14,D0
         TRAP    #15    
         
-        LEA     D1, A1
+      *  LEA     D1, A1
         MOVE.B  #14,D0
         TRAP    #15   
 
         
-        LEA     #PARENTHESIS_2, A1
+        LEA     PARENTHESIS_2, A1
         MOVE.B  #14,D0
         TRAP    #15  
   
-        RTS 
+        BRA EAEXIT                    ; branch to exit   
+ 
 
 
 EAMODE011: * --------- Address register indirect with post increment ----------------
 
-        LEA     #PARENTHESIS_1, A1
+        LEA     PARENTHESIS_1, A1
         MOVE.B  #14,D0
         TRAP    #15    
 
-        LEA     D1, A1
+     *   LEA     D1, A1
         MOVE.B  #14,D0
         TRAP    #15   
 
-        LEA     #PARENTHESIS_2, A1
+        LEA     PARENTHESIS_2, A1
         MOVE.B  #14,D0
         TRAP    #15    
 
-        LEA     #PLUS_SIGN, A1
+        LEA     PLUS_SIGN, A1
         MOVE.B  #14,D0
         TRAP    #15    
 
-        RTS 
+        BRA EAEXIT                    ; branch to exit   
+ 
 
 EAMODE100: *--------- Address register indirect with pre decrement ---------------
 
-        LEA     #MINUS_SIGN, A1
+        LEA     MINUS_SIGN, A1
         MOVE.B  #14,D0
         TRAP    #15    
         
-        LEA     #PARENTHESIS_1, A1
+        LEA     PARENTHESIS_1, A1
         MOVE.B  #14,D0
         TRAP    #15    
 
-        LEA     D1, A1
+    *    LEA     D1, A1
         MOVE.B  #14,D0
         TRAP    #15   
 
-        LEA #PARENTHESIS_2, A1
+        LEA     PARENTHESIS_2, A1
         MOVE.B  #14,D0
         TRAP    #15    
 
-        RTS 
-
-********************************TODO***********************************************
-EAMODE101: *----------  Address register indirect with displacement -----------------
-        LEA  #DOLLAR_SIGN, A1
-        MOVE.B  #14,D0
-        TRAP    #15    
-        
-        ; TODO: how to get 8-bit extension word?
-        MOVE.L  D1, D3       ; place in D3
-        CLR.L   D4
-        MOVE.B  #4, D4       ; store number of bytes 
-        
-        ; TODO convert to ASCII - branch
-        ; TODO move hex value to address reg
-        ; TODO store hex to buffer
-        
-        LEA  #PARENTHESIS_1, A1
-        MOVE.B  #14,D0
-        TRAP    #15    
-
-        ;store address in buffer
-        MOVE     D2, D1
-        ANDI     #$111, D0     ; compares to 111 to get register value
-        BSR      bufferMessanger  :send data??? i think this is I/O stuff 
-
-        LEA #COMMA, A1
-        MOVE.B  #14,D0
-        TRAP    #15    
-        
-        ; get index register
-        MOVE.L   D5, D1         ; store value in D1- TODO check if D5 is correct
-        ANDI     #$F000, D1     ; get first byte only to evaluate
-        ASL.L    #$1000, D1     ; shift to the farthest right
-        ASL.L    #$0100, D1     ; get first bit
-        ;TODO send byte to buffer
-     
-        ;TODO see if word or long
-        MOVE.L   D5, D1 
-        ANDI     #$0F00, D1     ; get byte that represents size
-        ASL.L    #$1000, D1     ; shift to farthest right
-        CMPI.B   #0, D1         ; compare to see if the length is word
-        ; TODO store in buffer??
-        *** BEQ     ???
-*        ; TODO what to do if other size? flag?
-        
-        ;TODO ADD DATA TYPES TO BUFFER
-        
-        
-        LEA  #PARENTHESIS_2, A1
-        MOVE.B  #14,D0
-        TRAP    #15    
-
-********************************TODO***********************************************
-EAMODE110: *-------Address reg indirect with index [8-bit, base];Memory indirect [postindexed, preindexed] ---
-    
-    ; i dont think i need these
-    *8BIT  ;branch
-    *BASE  ;branch
-    *MIPOSTINDEX    ;branch
-    *MIPREINDEX     ;branch
-    
+        BRA EAEXIT                    ; branch to exit   
+ 
 
 EAMODE111: * ------------ Absolute short, long ---------------------------------                                
       CMP.B   #%100, D2
-      BEQ     100IMMED        
+      BEQ     IMMED100        
       CMP.B   #%000, D2
-      BEQ     000SHORT
+      BEQ     SHORT000
       CMP.B   #%001, D2
-      BEQ     001LONG
+      BEQ     LONG001
       CMP.B   #%011, D2
-      BEQ     RTS        
+      BEQ     EAEXIT                    ; branch to exit   
+        
       CMP.B   #%101, D2
-      BEQ     RTS
+      BEQ     EAEXIT                    ; branch to exit   
+
       CMP.B   #%110, D2
-      BEQ     RTS
+      BEQ     EAEXIT                    ; branch to exit   
+
       CMP.B   #%111, D2
-      BEQ     RTS
+      BEQ     EAEXIT                    ; branch to exit   
+
     
-100IMMED ; branch
-      LEA     #POUND, A1
+IMMED100 ; branch
+      LEA     POUND, A1
       MOVE.B  #14,D0
       TRAP    #15    
         
-      LEA     #DOLLAR, A1 ;immediate data - hex
+      LEA     DOLLAR_SIGN, A1 ;immediate data - hex
       MOVE.B  #14,D0
       TRAP    #15    
       
       ***TODO finish  
 
 
-000SHORT ; branch
-      LEA     #DOLLAR, A1 ; hex
+SHORT000 ; branch
+      LEA     DOLLAR_SIGN, A1 ; hex
       MOVE.B  #14,D0
       TRAP    #15  
       
@@ -258,12 +226,11 @@ EAMODE111: * ------------ Absolute short, long ---------------------------------
       
       ;TODO CONVERT TO HEX AND PRINT
       
-      RTS
-      
-     
+      BRA EAEXIT                    ; branch to exit   
 
-001LONG ; branch
-      LEA     #DOLLAR, A1 ; hex
+
+LONG001 ; branch
+      LEA     DOLLAR_SIGN, A1 ; hex
       MOVE.B  #14,D0
       TRAP    #15  
       
@@ -274,9 +241,42 @@ EAMODE111: * ------------ Absolute short, long ---------------------------------
       
       ;TODO CONVERT TO HEX AND PRINT
       
-      RTS
-      
+      BRA EAEXIT                    ; branch to exit   
 
+EAERROR:
+      BRA EAEXIT        ; TODO set error flag
+
+
+EAEXIT:
+        MOVEM.L (A7)+, D0-D7/A1/A3-A6 ; put everything back on the stack
+        RTS                         ; return to sender
+
+BIN2A_VAL    DS.L 1  ; input number for our conversion
+BIN2A_BUFFER DS.B 16 ; buffer for ascii data
+BIN2A_COUNT  DS.L 1  ; number of bits to convert (must be div by 4)
+
+CONVERTTOASCII: 
+        MOVEM.L  D0-D7/A0-A6, -(A7)     
+        
+        MOVE.L   BIN2A_COUNT, D2    ; shift count
+        LEA      BIN2A_BUFFER, A0   ; load buffer into A0
+
+BIN2A_LOOP
+        SUB.L    #4, D2     ; decrement by 4
+        MOVE.L   BIN2A_VAL, D1 ; copy the input value
+        LSR.L    D2, D1
+        ANDI.L   #$7, D1  ; cut the crap
+        ADDI.L   #$30, D1 ; convert to ascii
+        
+        MOVE.B   D1, (A0)+ ; write character and increment buffer pointer
+        CMPI.L   #0, D2    ; check if counter is 0
+        BEQ      BIN2A_EXIT
+        BRA      BIN2A_LOOP
+        
+BIN2A_EXIT
+        MOVE.B   #0, (A0)+ ; null terminate and increment buffer pointer
+        MOVEM.L  (A7)+, D0-D7/A0-A6
+        RTS
 
 *---------------------- Symbols ----------------------------
 
@@ -287,6 +287,10 @@ MINUS_SIGN          DC.B        '-', 0
 COMMA               DC.B        ',', 0
 DOLLAR_SIGN         DC.B        '$', 0
 POUND               DC.B        '#', 0
+
+DATA_REG            DC.B        'D', 0
+
+
 
 * Put variables and constants here
 
