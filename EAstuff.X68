@@ -38,7 +38,6 @@ START:                    ; first instruction of program
 TESTLOC DS.W   1           ; store the EA code here
 **************TESTING TINGS***********************
 
-
 DECODEEA:
     MOVEM.L D0-D7/A1/A3-A6,-(A7) ; back up all the things
 
