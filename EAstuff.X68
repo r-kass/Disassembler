@@ -2,12 +2,10 @@
 * Title      : EA stuff
 * Written by :
 * Date       :
-* Description: right now, does not handle data from RTS, NOP, Bcc
-* ADDI, MOVEM?
-* MOVEQ?
-*
+* Description: check Bcc, MOVEQ
+* hardcode RTS and NOP
 *   will be called from print functions in Opcode to be handled
-*   differently (specifically for BRA, NOP, MOVEQ)
+*   differently 
 *
 *EAMODES
 *
@@ -29,7 +27,7 @@ START:                    ; first instruction of program
 
 
 **************TESTING TINGS***********************
-    MOVE.W  #$0007, TESTLOC      ; temp EA code
+    MOVE.W  #$0009, TESTLOC      ; temp EA code - SHOULD PRINT: A1
     LEA     TESTLOC, A2       ; load the address pointer
     MOVEA.L #$01000000,A7   ; init the stack pointer
     JSR     DECODEEA
@@ -55,8 +53,6 @@ DECODEEASIMPLE: * --------------Decode recieved 6 bits ----------------
         ANDI.L #$0007, D2    ; bitmask thingy
 
         BRA     EADECMODE
-*       LSL.W   #13, D2      ; bits shifted out to focus on last 3 bits
-
         
         ; mode is now in D1
         ; register is now in D2
@@ -89,7 +85,7 @@ EADECMODE: *--------------Loop to compare all EAModes-----------------
 
        ADD.L   #$1, D4    ; increment counter
        CMPI.L  #$7, D4    ; break loop here 
-   *   BEQ     EAERROR    ; TODO ******************PUT THIS BACK *****************************
+       BEQ     EAERROR    
        BRA     EADECMODE
 
 
@@ -315,12 +311,14 @@ LONG001 ; branch
       BRA     EAEXIT                    ; branch to exit   
 
 
-
 EAERROR:
-      BRA EAEXIT        ; TODO set error flag
+      LEA     EAERRORMSG, A1
+      MOVE.B  #13,D0
+      TRAP    #15
+      BRA     EAEXIT   
 
 
-EAEXIT:
+EAEXIT: ; SET ERROR FLAG TODO
         MOVEM.L (A7)+, D0-D7/A1/A3-A6 ; put everything back on the stack
         RTS                         ; return to sender
 
@@ -364,6 +362,7 @@ POUND               DC.B        '#', 0
 DATA_REG            DC.B        'D', 0
 ADD_REG             DC.B        'A', 0
 
+EAERRORMSG          DC.B	    'Invalid Mode',0
 
 
 * Put variables and constants here
