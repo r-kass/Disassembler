@@ -2,10 +2,18 @@
 * Title      : EA stuff
 * Written by :
 * Date       :
-* Description: check Bcc, MOVEQ
-* hardcode RTS and NOP
+* Description: 
+* 
+* TODO:
+* add when merging with opcode: ADDI print immediate data that comes after
+*                               MOVEQ #immediatevalue, Dn
+*                               MOVEM word, register list mask
+*                               Bcc dispacement and add displacement word
+*
 *   will be called from print functions in Opcode to be handled
 *   differently 
+* 
+* 
 *
 *EAMODES
 *
