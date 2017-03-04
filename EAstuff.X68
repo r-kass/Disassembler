@@ -5,10 +5,10 @@
 * Description: 
 * 
 * TODO:
-* add when merging with opcode: ADDI print immediate data that comes after
-*                               MOVEQ #immediatevalue, Dn
+* add when merging with opcode: ADDI print immediate data that comes after -DONE
+*                               MOVEQ #immediatevalue, Dn - DONE
 *                               MOVEM word, register list mask
-*                               Bcc dispacement and add displacement word
+*                               Bcc dispacement and add displacement word - DONE
 *
 *   will be called from print functions in Opcode to be handled
 *   differently 
@@ -66,7 +66,7 @@ DECODEEASIMPLE: * --------------Decode recieved 6 bits ----------------
         ; register is now in D2
 
 *TODO
-*DECODEEASPECIAL: FOR STRANGE CASES
+
 
 EADECMODE: *--------------Loop to compare all EAModes-----------------
 
@@ -324,6 +324,59 @@ EAERROR:
       MOVE.B  #13,D0
       TRAP    #15
       BRA     EAEXIT   
+
+*-----------------------------SPECIAL SNOWFLAKES-------------------------------*
+PRINTBCCEA ;special case 
+
+      MOVE.B  (A2), D1  ; only move last byte
+      MOVE.B   #14,D0
+      TRAP     #15
+
+      BRA EAEXIT      
+      
+PRINTMOVEQ ;special case 
+
+      MOVE.B  (A2), D1  ; only move last byte
+      MOVE.B   #14,D0
+      TRAP     #15
+
+      BRA EAEXIT      
+
+PRINTADDIBYTE
+      ADDA.W  #1, A2 ; read following word from memory
+
+      MOVE.W  (A2),D6  
+      MOVE.W  #4, D5
+      JSR     BIN2A_CONVERT
+
+      ADDA.W  #2, A1 
+
+      BRA     EAEXIT        
+
+
+PRINTADDIWORD
+
+      ADDA.W  #2, A2 ; read following word from memory
+
+      MOVE.W  (A2),D6  
+      MOVE.W  #8, D5
+      JSR     BIN2A_CONVERT
+
+      ADDA.W  #4, A1 
+
+      BRA     EAEXIT     
+
+PRINTADDILONG 
+
+      ADDA.L  #4, A2 ; read following word from memory
+
+      MOVE.W  (A2),D6  
+      MOVE.L  #16, D5
+      JSR     BIN2A_CONVERT
+
+      ADDA.L  #8, A1 
+
+      BRA     EAEXIT     
 
 
 EAEXIT: ; SET ERROR FLAG TODO
