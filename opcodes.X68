@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
 * Title      : A disassembler
-* Written by : Jesse Llona (#1), Ruby Kassal (#2)
+* Written by : Jesse Llona, Ruby Kassala
 * Date       : I don't know the date. All I know now is assembly.
 * Description: It dissasbles things
 *-----------------------------------------------------------
