@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
 * Title      : A disassembler
-* Written by : Jesse Llona, Ruby Kassal
+* Written by : Jesse Llona (#1), Ruby Kassal
 * Date       : I don't know the date. All I know now is assembly.
 * Description: It dissasbles things
 *-----------------------------------------------------------
@@ -330,6 +330,12 @@ printUNKNOWN:
             MOVE.B  #13,D0
             TRAP    #15
             BRA     LOOP            
+
+printUnknownSize:
+            LEA     UnknownSizemsg,A1   
+            MOVE.B  #13,D0
+            TRAP    #15
+            BRA     LOOP         
             
 printCMP:
             LEA     CMPmsg,A1
@@ -343,6 +349,8 @@ printCMP:
             BEQ     printB
             CMP.W   #$0040,D2
             BEQ     printW
+            CMP.W   #$00C0,D2
+            BEQ     printUnknownSize
             BRA     printL
             
 
@@ -359,6 +367,8 @@ printAND:
             BEQ     printB
             CMP.W   #$0040,D2
             BEQ     printW
+            CMP.W   #$00C0,D2
+            BEQ     printUnknownSize
             BRA     printL
 
     
@@ -374,6 +384,8 @@ printOR:
             BEQ     printB
             CMP.W   #$0040,D2
             BEQ     printW
+            CMP.W   #$00C0,D2
+            BEQ     printUnknownSize
             BRA     printL
             
 printLSL:
@@ -474,6 +486,8 @@ printADD:
             BEQ     printB
             CMP.W   #$0040,D2
             BEQ     printW
+            CMP.W   #$00C0,D2
+            BEQ     printUnknownSize
             BRA     printL
             
             
@@ -489,6 +503,8 @@ printADDI:
             BEQ     printB
             CMP.W   #$0040,D2
             BEQ     printW
+            CMP.W   #$00C0,D2
+            BEQ     printUnknownSize
             BRA     printL
 
 
@@ -504,6 +520,8 @@ printSUB:
             BEQ     printB
             CMP.W   #$0040,D2
             BEQ     printW
+            CMP.W   #$00C0,D2
+            BEQ     printUnknownSize
             BRA     printL
 
 printADDA:
@@ -532,6 +550,8 @@ printADDQ:
             BEQ     printW
             CMp.W   #$0080,D2
             BEQ     printL
+            CMP.W   #$00C0,D2
+            BEQ     printUnknownSize
             
 printMove:
             LEA     MOVEmsg,A1
@@ -540,15 +560,15 @@ printMove:
             
             ; check size
             MOVE.W  (A2),D2           ; decode in D2
-            LSL.W   #2,D2
-            ANDI.W  #$C000,D2
-            ROL.W   #2,D2
-            CMP.B   #1,D2
+            ANDI.W  #$3000,D2
+            CMP.B   #$1000,D2
             BEQ     printB
-            CMP.B   #3,D2
+            CMP.B   #$3000,D2
             BEQ     printW
-            CMP.B   #2,D2
+            CMP.B   #$2000,D2
             BEQ     printL
+            CMP.B   #$0000,D2
+            BEQ     printUnknownSize
 
 
 
@@ -603,6 +623,8 @@ printClr:
             BEQ     printW
             CMP.W   #$0080,D2
             BEQ     printL
+            CMP.W   #$00C0,D2
+            BEQ     printUnknownSize
 
 printBcc:
             LEA     Bccmsg,A1
@@ -635,14 +657,16 @@ printMovea:
             
             ;decode size
             MOVE.W  (A2),D2           ; decode in D2
-            LSL.W   #2,D2
-            ANDI.W  #$C000,D2
-            ROL.W   #2,D2
-            CMP.B   #3,D2
+            ANDI.W  #$3000,D2
+            CMP.B   #$1000,D2
+            BEQ     printB
+            CMP.B   #$3000,D2
             BEQ     printW
-            CMP.B   #2,D2
+            CMP.B   #$2000,D2
             BEQ     printL
-            
+            CMP.B   #$0000,D2
+            BEQ     printUnknownSize
+     
 
 
 printL:
@@ -676,42 +700,45 @@ wronglength     DC.B    'Input was not 8 digits, try again.',CR,LF,'(TIP: add le
 overlapMsg      DC.B    'This overlaps with the disassembler, try again.',CR,LF,0
 newLine         DC.B    CR,LF,0
 
-Lmsg        DC.B    'L',CR,LF,0
-Wmsg        DC.B    'W',CR,LF,0
-Bmsg        DC.B    'B',CR,LF,0
+Lmsg            DC.B    'L',CR,LF,0
+Wmsg            DC.B    'W',CR,LF,0
+Bmsg            DC.B    'B',CR,LF,0
 
-UNKNOWNmsg  DC.B    HT,'INVALED',CR,LF,0
-ADDQmsg     DC.B    HT,'ADDQ.',0
-ADDImsg     DC.B    HT,'ADDI.',0
-MOVEAmsg    DC.B    HT,'MOVEA.',0
-ADDAmsg     DC.B    HT,'ADDA.',0
-MOVEMmsg    DC.B    HT,'MOVEM.',0
-MOVEQmsg    DC.B    HT,'MOVEQ',CR,LF,0
-MULSmsg     DC.B    HT,'MULS',CR,LF,0
-DIVUmsg     DC.B    HT,'DIVU',CR,LF,0
-LEAmsg      DC.B    HT,'LEA',CR,LF,0
-CMPmsg      DC.B    HT,'CMP.',0
-CLRmsg      DC.B    HT,'CLR.',0
-ANDmsg      DC.B    HT,'AND.',0
-ORmsg       DC.B    HT,'OR.',0
-ADDmsg      DC.B    HT,'ADD.',0
-SUBmsg      DC.B    HT,'SUB.',0
-MOVEmsg     DC.B    HT,'MOVE.',0
-LSRmsg      DC.B    HT,'LSR.',0
-LSLmsg      DC.B    HT,'LSL.',0
-ASRmsg      DC.B    HT,'ASR.',0
-ASLmsg      DC.B    HT,'ASL.',0
-RORmsg      DC.B    HT,'ROR.',0
-ROLmsg      DC.B    HT,'ROL.',0
-Bccmsg      DC.B    HT,'Bcc',CR,LF,0
-JSRmsg      DC.B    HT,'JSR',CR,LF,0
-RTSmsg      DC.B    HT,'RTS',CR,LF,0
-NOPmsg      DC.B    HT,'NOP',CR,LF,0
+UnknownSizemsg  DC.B    'UNKOWNSIZE',CR,LF,0
+UNKNOWNmsg      DC.B    HT,'INVALED',CR,LF,0
+ADDQmsg         DC.B    HT,'ADDQ.',0
+ADDImsg         DC.B    HT,'ADDI.',0
+MOVEAmsg        DC.B    HT,'MOVEA.',0
+ADDAmsg         DC.B    HT,'ADDA.',0
+MOVEMmsg        DC.B    HT,'MOVEM.',0
+MOVEQmsg        DC.B    HT,'MOVEQ',CR,LF,0
+MULSmsg         DC.B    HT,'MULS',CR,LF,0
+DIVUmsg         DC.B    HT,'DIVU',CR,LF,0
+LEAmsg          DC.B    HT,'LEA',CR,LF,0
+CMPmsg          DC.B    HT,'CMP.',0
+CLRmsg          DC.B    HT,'CLR.',0
+ANDmsg          DC.B    HT,'AND.',0
+ORmsg           DC.B    HT,'OR.',0
+ADDmsg          DC.B    HT,'ADD.',0
+SUBmsg          DC.B    HT,'SUB.',0
+MOVEmsg         DC.B    HT,'MOVE.',0
+LSRmsg          DC.B    HT,'LSR.',0
+LSLmsg          DC.B    HT,'LSL.',0
+ASRmsg          DC.B    HT,'ASR.',0
+ASLmsg          DC.B    HT,'ASL.',0
+RORmsg          DC.B    HT,'ROR.',0
+ROLmsg          DC.B    HT,'ROL.',0
+Bccmsg          DC.B    HT,'Bcc',CR,LF,0
+JSRmsg          DC.B    HT,'JSR',CR,LF,0
+RTSmsg          DC.B    HT,'RTS',CR,LF,0
+NOPmsg          DC.B    HT,'NOP',CR,LF,0
 
 inputSpace  DC.B    '',0            ; don't put any variables after this. or anything at all. IT'S IMPORTANT THAT THIS IS THE END, OK!?!?!?
 
 EXIT:
     END    START        ; last line of source
+
+
 
 
 
