@@ -1,8 +1,8 @@
 *-----------------------------------------------------------
-* Title      : EA stuff
-* Written by :
-* Date       :
-* Description: 
+* Title      : EA portion of disassembler
+* Written by : Jesse Llona, Ruby Kassala
+* Date       : 2017.03.09
+* Description: Disassembles things
 * 
 * TODO:
 * add when merging with opcode: ADDI print immediate data that comes after -DONE
@@ -13,7 +13,8 @@
 *   will be called from print functions in Opcode to be handled
 *   differently 
 * 
-* 
+* The following functions are called from the Opcode.X68 file to disassemble 
+* EA portion. The following OpCodes are considered special cases and are handled 
 *
 *EAMODES
 *
@@ -35,17 +36,18 @@ START:                    ; first instruction of program
 
 
 **************TESTING TINGS***********************
-    MOVE.W  #$0009, TESTLOC      ; temp EA code - SHOULD PRINT: A1
+    MOVE.L #$48F9001E, TESTLOC      ; temp EA code - SHOULD PRINT: A1
     LEA     TESTLOC, A2       ; load the address pointer
     MOVEA.L #$01000000,A7   ; init the stack pointer
-    JSR     DECODEEA
+    JSR     MOVEMEA
     SIMHALT
     
-TESTLOC DS.W   1           ; store the EA code here
+TESTLOC DS.L   1           ; store the EA code here
 **************TESTING TINGS***********************
 
 DECODEEA:
     MOVEM.L D0-D7/A1/A3-A6,-(A7) ; back up all the things
+    BRA DECODEEASIMPLE
 
 
 DECODEEASIMPLE: * --------------Decode recieved 6 bits ----------------
@@ -231,6 +233,8 @@ EAMODE111: * ------------ Absolute short, long ---------------------------------
       BEQ     SHORT000
       CMP.B   #%001, D2
       BEQ     LONG001
+      CMP.B   #%010, D2
+      BEQ     EAEXIT                    ; branch to exit 
       CMP.B   #%011, D2
       BEQ     EAEXIT                    ; branch to exit   
       CMP.B   #%101, D2
@@ -326,55 +330,136 @@ EAERROR:
       BRA     EAEXIT   
 
 *-----------------------------SPECIAL SNOWFLAKES-------------------------------*
-PRINTBCCEA ;special case 
 
-      MOVE.B  (A2), D1  ; only move last byte
+*-----------------------------MOVEM SUBROUTINES-------------------------------*
+MOVEMEA:  ; if  first half : An , second half: Dn
+       CLR.W   D7
+
+       MOVE.W  (A2)+,D3     ; opcode
+       MOVE.W  (A2),D1   ; get copy of all 16 bits
+
+*       MOVE.W  (A2),D2      ; copy for register bits 
+*       ANDI.W #$FF00, D1    ; address register thingy
+*       ANDI.W #$00FF, D2    ; data register thingy
+
+
+       MOVE.L  #$0, D4   ; counter for loop
+
+MOVEMEALOOP:
+       LSR.W   #1, D1
+      BCS     PRINTMOVEM               ;branch if a 1 is shifted out
+      
+       ADD.L   #1, D4    ; increment counter
+       CMPI.L  #$15, D4    ; break loop here 
+
+       BRA     MOVEMEALOOP
+
+PRINTMOVEM:
+      CMPI.L  #8, D4
+
+      BGE     PRINTMOVEMA 
+      BRA     PRINTMOVEMD
+      
+PRINTMOVEMD:
+      LEA     DATA_REG, A1
+      MOVE.B  #14,D0
+      TRAP    #15
+
+      MOVE.L   D4,D6   ; copy count to D6
+ *    SUBI.L  #1, D6
+      
+      MOVE.B  D6, BIN2A_VAL
+      MOVE.L  #8, BIN2A_CONVERT
+      JSR     BIN2A_CONVERT
+
+      ADDA.W   #8, A1 
+      LEA      BIN2A_BUFFER, A1
+      MOVE.B   #14,D0
+      TRAP     #15
+
+      BRA MOVEMEALOOP
+
+
+PRINTMOVEMA:
+      LEA    ADD_REG, A1
+      MOVE.B  #14,D0
+      TRAP    #15
+
+      MOVE.L   D4,D6   ; copy count to D6
+  *   SUBI.L  #1, D6
+      
+      MOVE.B  D6, BIN2A_VAL
+      MOVE.W  #16, BIN2A_COUNT
+      JSR     BIN2A_CONVERT
+
+  *   ADDA.W   #2, A1 
+      LEA      BIN2A_BUFFER, A1
+      MOVE.B   #14,D0
+      TRAP     #15
+      
+      BRA MOVEMEALOOP
+*-----------------------------END MOVEA SUBROUTINES-------------------------------*
+      
+BCCEA: ;special case 
+      ADDA.L   #2, A2
+      MOVE.B  (A2),D1  ; only move last byte
       MOVE.B   #14,D0
       TRAP     #15
 
       BRA EAEXIT      
       
-PRINTMOVEQ ;special case 
+MOVEQEA: ;special case 
 
+      ADDA.L   #2, A2
       MOVE.B  (A2), D1  ; only move last byte
       MOVE.B   #14,D0
       TRAP     #15
 
       BRA EAEXIT      
 
-PRINTADDIBYTE
+PRINTADDIBYTE:
       ADDA.W  #1, A2 ; read following word from memory
-
-      MOVE.W  (A2),D6  
-      MOVE.W  #4, D5
+     
+      MOVE.W  (A2),BIN2A_VAL  
+      MOVE.W  #4, BIN2A_COUNT
       JSR     BIN2A_CONVERT
 
-      ADDA.W  #2, A1 
+  *   ADDA.W   #2, A1 
+      LEA      BIN2A_BUFFER, A1
+      MOVE.B   #14,D0
+      TRAP     #15
 
       BRA     EAEXIT        
 
 
-PRINTADDIWORD
+PRINTADDIWORD:
 
       ADDA.W  #2, A2 ; read following word from memory
 
-      MOVE.W  (A2),D6  
-      MOVE.W  #8, D5
+      MOVE.W  (A2),BIN2A_VAL  
+      MOVE.W  #8, BIN2A_COUNT
       JSR     BIN2A_CONVERT
 
-      ADDA.W  #4, A1 
+  *   ADDA.W   #4, A1 
+      LEA      BIN2A_BUFFER, A1
+      MOVE.B   #14,D0
+      TRAP     #15
 
       BRA     EAEXIT     
 
-PRINTADDILONG 
+PRINTADDILONG: 
 
       ADDA.L  #4, A2 ; read following word from memory
 
-      MOVE.W  (A2),D6  
-      MOVE.L  #16, D5
+      MOVE.W  (A2),BIN2A_VAL  
+      MOVE.W  #16, BIN2A_COUNT
       JSR     BIN2A_CONVERT
 
-      ADDA.L  #8, A1 
+  *   ADDA.W   #8, A1 
+      LEA      BIN2A_BUFFER, A1
+      MOVE.B   #14,D0
+      TRAP     #15
+
 
       BRA     EAEXIT     
 
@@ -383,6 +468,7 @@ EAEXIT: ; SET ERROR FLAG TODO
         MOVEM.L (A7)+, D0-D7/A1/A3-A6 ; put everything back on the stack
         RTS                         ; return to sender
 
+*---------------BINARY TO ASCII CONVERSION -------------------------------
 BIN2A_VAL    DS.L 1  ; input number for our conversion
 BIN2A_BUFFER DS.B 16 ; buffer for ascii data
 BIN2A_COUNT  DS.L 1  ; number of bits to convert (must be div by 4)
@@ -394,12 +480,15 @@ BIN2A_CONVERT:
         LEA      BIN2A_BUFFER, A0   ; load buffer into A0
 
 BIN2A_LOOP:
-        SUB.L    #4, D2     ; decrement by 4
-        MOVE.L   BIN2A_VAL, D1 ; copy the input value
+        SUB.L    #4, D2     ; decrement by 
+        MOVE.L    BIN2A_VAL,D1 ; copy the input value
         LSR.L    D2, D1
-        ANDI.L   #$7, D1  ; cut the crap
-        ADDI.L   #$30, D1 ; convert to ascii
+        ANDI.L   #$F, D1  ; truncate
+        CMP.B    #10, D1
+        BGE      BIGNUM
+        ADDI.L   #$30, D1 
         
+BIN2A_LOOP2
         MOVE.B   D1, (A0)+ ; write character and increment buffer pointer
         CMPI.L   #0, D2    ; check if counter is 0
         BEQ      BIN2A_EXIT
@@ -409,6 +498,12 @@ BIN2A_EXIT:
         MOVE.B   #0, (A0)+ ; null terminate and increment buffer pointer
         MOVEM.L  (A7)+, D0-D7/A0-A6
         RTS
+        
+BIGNUM 
+        ADDI.L   #$37,D1
+        BRA      BIN2A_LOOP2
+
+*------------------------------------------------------------------------
 
 *---------------------- Symbols ----------------------------
 
@@ -419,6 +514,7 @@ MINUS_SIGN          DC.B        '-', 0
 COMMA               DC.B        ',', 0
 DOLLAR_SIGN         DC.B        '$', 0
 POUND               DC.B        '#', 0
+SLASH               DC.B        '/', 0
 
 DATA_REG            DC.B        'D', 0
 ADD_REG             DC.B        'A', 0
