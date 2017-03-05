@@ -63,7 +63,6 @@ DECODEEASIMPLE: * --------------Decode recieved 6 bits ----------------
         ; mode is now in D1
         ; register is now in D2
 
-*TODO
 
 
 EADECMODE: *--------------Loop to compare all EAModes-----------------
@@ -96,6 +95,8 @@ EADECMODE: *--------------Loop to compare all EAModes-----------------
 
 
 EAMODE000: *-------------------- Data register direct -------------------------------
+        JSR     ADDQEA
+
         LEA     DATA_REG, A1
         MOVE.B  #14,D0
         TRAP    #15
@@ -110,7 +111,9 @@ EAMODE000: *-------------------- Data register direct --------------------------
 
         CMP.B   #100,D7
         BEQ     EAEXIT
-
+        CMP.B   #101,D7
+        BEQ     RETURNEA
+        
         LEA      COMMA,A1
         TRAP     #15
         
@@ -118,6 +121,7 @@ EAMODE000: *-------------------- Data register direct --------------------------
         BEQ      PRINTA000
         
         LEA      DATA_REG, A1
+        
 CONTMODE000:     
         TRAP     #15
         MOVE.W   (A2),D2
@@ -296,6 +300,33 @@ EAMODE111: * ------------ Absolute short, long ---------------------------------
       CMP.B   #%111, D2
       BEQ     EAEXIT                    ; branch to exit   
 
+ADDQEA:
+      CMP.B   #3,D7
+      BNE     RETURNEA
+
+      LEA     POUND, A1
+      MOVE.B  #14,D0
+      TRAP    #15
+      
+      MOVE.W  (A2),D2
+      ANDI.W  #$0E00,D2
+      LSR.W   #8,D2
+      LSR.W   #1,D2
+      
+      MOVE.B  D2,D1
+      MOVE.B  #3,D0
+      TRAP    #15
+      
+      LEA     COMMA,A1
+      MOVE.B  #14,D0
+      TRAP    #15
+      
+      MOVE.B  #100,D7
+
+RETURNEA:
+      RTS      
+
+
     
 IMMED100 ; branch
       LEA     POUND, A1
@@ -391,36 +422,79 @@ EAERROR:
 *-----------------------------SPECIAL SNOWFLAKES-------------------------------*
 
 *-----------------------------MOVEM SUBROUTINES-------------------------------*
-MOVEMSET DS.B 0 ; 0 if set bits, else 1
+MOVEMSET        DS.B 0 ; 0 if set bits, else 1
+MOVEMMEMCOUNT   DS.B 0 ; 0 if memory is already printed, otherwise 1
+MOVEMCOUNT      DS.B 0 ; 0 if other stuff is already printed, otherwise 1
 
+DECODEMOVEMEA:
+       MOVEM.L D0-D7/A1/A3-A6,-(A7)
+       MOVE.W   (A2)+,D3     ; opcode
+       ANDI.W   #$0400, D3
+       CMPI.W   #$0, D3
+       BEQ      MOVEMEA
+       MOVE.B   #$1, MOVEMMEMCOUNT 
+       BRA      MOVEMEAMEM
+        
+MOVEMEAMEM:
 
-MOVEMEA:  ; if  first half : An , second half: Dn
+        
+       CMPI.W   #$1, MOVEMMEMCOUNT 
+       BEQ      MOVEMEXIT
+       MOVE.B    #1,MOVEMMEMCOUNT
+       MOVEA.W  A2, A3
+       ADDA.W   #4, A3
+       MOVE.L   #32,BIN2A_COUNT
+       MOVE.W   (A3),D7
+       MOVE.L   D7,BIN2A_VAL
+       JSR      BIN2A_CONVERT       
+       
+       LEA      BIN2A_BUFFER,A1
+       MOVE.B   #14,D0
+       TRAP     #15
+       
+       CMPI.B   #$1, MOVEMCOUNT
+       BEQ      MOVEMCOMMAR
+       BRA      MOVEMEXIT
+       
+MOVEMEA:  
        CLR.W   D7
-
-       MOVE.W  (A2)+,D3     ; opcode
        MOVE.W  (A2),D5   ; get copy of all 16 bits
 
        MOVE.L  #$0, D4   ; counter for loop
-
+       CMPI.W  #$1, MOVEMCOUNT
 
 MOVEMEALOOP:
 
        ADD.L   #$1, D4    ; increment counter
-       CMPI.L  #$F, D4    ; break loop here 
-       BEQ     EAEXIT
-
-  
+       CMPI.L  #$F, D4    ; break loop here
+       BEQ     MOVEMCOMMAM
+         
        LSR.W   #1, D5
-       BCS     PRINTMOVEM               ;branch if a 1 is shifted out
+       BCS     PRINTMOVEMEA               ;branch if a 1 is shifted out
        BRA     MOVEMEALOOP
 
-PRINTMOVEM:
+MOVEMCOMMAM
+       CMP.B    #1, MOVEMCOUNT
+       BEQ      MOVEMEXIT
+       LEA      COMMA,A1
+       MOVE.B   #14,D0
+       TRAP     #15
+       BRA      MOVEMEAMEM
+       
+MOVEMCOMMAR
+       LEA      COMMA,A1
+       MOVE.B   #14,D0
+       TRAP     #15
+       BRA      MOVEMEA       
+       
+
+PRINTMOVEMEA:
       CMPI.B   #1, MOVEMSET
       BEQ      PRINTSLASH
       
 PRINTMOVEM2:
       MOVE.B   #1, MOVEMSET
-      CMPI.L   #7, D4
+      CMPI.L   #8, D4
 
       BLE      PRINTMOVEMD 
       BRA      PRINTMOVEMA
@@ -447,7 +521,7 @@ PRINTMOVEMA:
       TRAP    #15
 
       MOVE.L  D4,D6   ; copy count to D6
-      SUBI.L  #8, D6
+      SUBI.L  #9, D6
       
       MOVE.B  D6,D1
       MOVE.B  #3,D0
@@ -462,6 +536,9 @@ PRINTSLASH
       TRAP    #15
       BRA     PRINTMOVEM2
 
+MOVEMEXIT:
+      ADDA.L  #6,A2
+      BRA     EAEXIT
 *-----------------------------END MOVEA SUBROUTINES-------------------------------*
       
 MOVEEA: 
@@ -520,56 +597,91 @@ MOVEQEA: ;special case
       
       BRA EAEXIT        
 
-PRINTADDIBYTE:
-      ADDA.W  #1, A2 ; read following word from memory
-     
-      MOVE.W  (A2),BIN2A_VAL  
-      MOVE.W  #4, BIN2A_COUNT
-      JSR     BIN2A_CONVERT
-
-  *   ADDA.W   #2, A1 
-      LEA      BIN2A_BUFFER, A1
-      MOVE.B   #14,D0
-      TRAP     #15
-
- 
-      BRA     EAEXIT        
+*PRINTADDIBYTE:
+*      MOVEM.L D0-D7/A1/A3-A6,-(A7) ; back up all the things
+*
+*      ADDA.W  #1, A2 ; read following word from memory
+*     
+*      MOVE.W  (A2),BIN2A_VAL  
+*      MOVE.W  #4, BIN2A_COUNT
+*      JSR     BIN2A_CONVERT
+*
+*  *   ADDA.W   #2, A1 
+*      LEA      BIN2A_BUFFER, A1
+*      MOVE.B   #14,D0
+*      TRAP     #15
+*
+* 
+*      BRA     EAEXIT        
 
 
 PRINTADDIWORD:
+      MOVEM.L D0-D7/A1/A3-A6,-(A7) ; back up all the things
 
-      ADDA.W  #2, A2 ; read following word from memory
-
-      MOVE.W  (A2),BIN2A_VAL  
-      MOVE.W  #8, BIN2A_COUNT
+      
+      MOVE.L  (A2),BIN2A_VAL  
+      MOVE.L  #16, BIN2A_COUNT
       JSR     BIN2A_CONVERT
 
+
+      LEA      POUND,A1
+      MOVE.B   #14,D0
+      TRAP     #15
+      
+      LEA      DOLLAR_SIGN,A1
+      TRAP     #15
+      
   *   ADDA.W   #4, A1 
       LEA      BIN2A_BUFFER, A1
       MOVE.B   #14,D0
       TRAP     #15
-
+      
+      LEA      COMMA,A1
+      TRAP     #15
+      
+      MOVE.B   #101,D7
+      JSR DECODEEASIMPLE
+      
+      ADDA.L   #2,A2
+        
       BRA     EAEXIT     
 
 PRINTADDILONG: 
+      MOVEM.L D0-D7/A1/A3-A6,-(A7) ; back up all the things
 
-      ADDA.L  #4, A2 ; read following word from memory
-
-      MOVE.W  (A2),BIN2A_VAL  
-      MOVE.W  #16, BIN2A_COUNT
+      ADDA.W  #2,A2
+      MOVE.L  (A2),BIN2A_VAL
+      SUBA.W  #2,A2  
+      MOVE.L  #32, BIN2A_COUNT
       JSR     BIN2A_CONVERT
 
   *   ADDA.W   #8, A1 
+      LEA      POUND,A1
+      MOVE.B   #14,D0
+      TRAP     #15
+      
+      LEA      DOLLAR_SIGN,A1
+      TRAP     #15
+      
+  *   ADDA.W   #4, A1 
       LEA      BIN2A_BUFFER, A1
       MOVE.B   #14,D0
       TRAP     #15
+      
+      LEA      COMMA,A1
+      TRAP     #15
+      
+      MOVE.B   #101,D7
+      JSR DECODEEASIMPLE
+      
+      ADDA.L   #4,A2
 
 
       BRA     EAEXIT     
 
 
 EAEXIT: ; SET ERROR FLAG TODO
-        MOVEM.L (A7)+, D0-D7/A1/A4-A6 ; put everything back on the stack
+        MOVEM.L (A7)+, D0-D7/A1/A3-A6 ; put everything back on the stack
         MOVE.L  #0,D7
         LEA     NEWLINE,A1
         MOVE.B  #14,D0
@@ -639,7 +751,14 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
 
   ;  END    START        ; last line of source
 *~Font name~Courier New~
+  
+
+
+
+
+
+
+*~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
-  

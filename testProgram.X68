@@ -12,9 +12,9 @@
     CMP.L   D1,D2
 *    
 *    * CLR
-*    CLR.B   D1         ; WORKING
-*    CLR.W   D1         ; WORKING
-*    CLR.L   D1         ; WORKING
+    CLR.B   D1
+    CLR.W   D1
+    CLR.L   D1
 *
 *    * AND
     AND.B   D1,D2
@@ -42,9 +42,9 @@
     ADDQ.L  #5,D1
 *    
 *    * ADDI
-*    ;ADDI.B   #40,D1
-*    ;ADDI.W   #40,D1
-*    ;ADDI.L   #40,D1
+    ADDI.B   #40,D1
+    ADDI.W   #40,D1
+    ADDI.L   #40,D1
 *    
 *    * SUB
     SUB.B   D1,D2
@@ -75,7 +75,8 @@
 *    ADDA.L    A2,A2
 *    
 *    * MOVEM commands (this may be the hardest to decode)
-*    ;MOVEM   D0-D7/A1-A4,EXIT    ;loads all the listed registers to memory at exit 
+    ;MOVEM.W   D0-D7/A1-A4,EXIT    ;loads all the listed registers to memory at exit 
+    MOVEM.W   EXIT,D0-D7/A1-A4   ;loads all the listed registers to memory at exit 
 *    
 *    * MOVEQ commands
     MOVEQ   #$12,D3
@@ -137,17 +138,17 @@
 *    
 *    
 *    * JSR
-*    JSR     subroutine
+    JSR     MAIN
 *    
 *    * NOP
-*    NOP
+    NOP
 *
-*    BRA     DECODE
+
 *    
 *subroutine:
 *
 *    * RTS
-*    RTS    
+    RTS    
 *
 *    
 *
@@ -175,6 +176,14 @@
 *
 *
 *
+
+
+
+
+
+
+
+
 
 
 

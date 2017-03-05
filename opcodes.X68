@@ -4,11 +4,13 @@
 * Date       : I don't know the date. All I know now is assembly.
 * Description: It dissasbles things
 *-----------------------------------------------------------
-    ORG     $2000 ; this is where the test program will be loaded into memory
-START:                  ; first instruction of program
+    ORG     $3000 ; this is where the test program will be loaded into memory
+START: 
+                  ; first instruction of program
     BRA     MAIN
     INCLUDE 'testProgram.X68' ; run the testProgram Subroutine
-    
+   
+
     ORG     $1000 ; this is where the rest of the code will be loaded into memory
 MAIN
 * Put program code here
@@ -158,6 +160,8 @@ LOOP:
 
     BRA         DECODE
 DECODE:          
+            ; 
+
             ; check RTS and NOP
             MOVE.W  (A2),D2           ; decode in D2
             CMP.W   #$4E75,D2        ; RTS code is constant, as is NOP code
@@ -211,29 +215,37 @@ DECODE:
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$FB80,D2
             CMP.W   #$4880,D2
+            BEQ     PRINTMOVEM
 
             ; check MOVEA   movea if 00xx xxx0 01xx xxxx
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$3000,D2
             CMP.W   #$0000,D2         ; if size code is 0, it's not a movea
-
+            BEQ     AFTERMOVEA
             
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$C1C0,D2
             CMP.W   #$0040,D2
             BEQ     printMOVEA
 
+AFTERMOVEA
+            ; check ADDI
+            MOVE.W  (A2),D2
+            ANDI.W  #$FF00,D2
+            CMP.W   #$0600,D2
+            BEQ     printADDI
+
             ; check MOVE move if 00xx xxxx xxxx xxxx        NEEDS TO BE AFTER MOVEA
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$3000,D2
             CMP.W   #$0000,D2         ; if size code is 0, it's not a move
-
+            BEQ     AFTERMOVE
             
             MOVE.W  (A2),D2
             ANDI.W  #$C000,D2
             CMP.W   #$0000,D2
             BEQ     printMove
-
+AFTERMOVE
             ; check ADDQ
             MOVE.W  (A2),D2
             ANDI.W  #$F100,D2
@@ -251,12 +263,6 @@ DECODE:
             ANDI.W  #$F000,D2
             CMP.W   #$9000,D2
             BEQ     printSUB
-            
-            ; check ADDI
-            MOVE.W  (A2),D2
-            ANDI.W  #$FF00,D2
-            CMP.W   #$0600,D2
-            BEQ     printADDI
             
             ; check ADD
             MOVE.W  (A2),D2
@@ -489,14 +495,18 @@ printADDI:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            CMP.W   #$00C0,D2
-            BEQ     printUnknownSize
-            BRA     printL
+            LSR.W   #6,D2
+            BRA     printADDISize
 
+printADDISIZE:
+            CMP.W   #$0000,D2
+            BEQ     printBaddi
+            CMP.W   #$0001,D2
+            BEQ     printWaddi
+            CMP.W   #$0002,D2
+            BEQ     printLaddi
+            BRA     LOOP
+            
 
 printSUB:
             LEA     SUBmsg,A1
@@ -528,6 +538,7 @@ printADDQ:
             MOVE.B  #14,D0
             TRAP    #15
             
+            MOVE.L  #3,D7
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
@@ -557,9 +568,20 @@ printMovem:
             
             ; check size
             MOVE.W  (A2),D2           ; decode in D2
-            LSR.W   #7,D2
-            Bcc     printW
-            BRA     printL
+            LSR.W   #6,D2
+            ANDI.W  #1,D2
+            CMP.W   #0,D2
+            BEQ     printMovemW
+            LEA     Lmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            BRA     DECODEMOVEMEA
+            
+printMovemW:
+            LEA     Wmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            BRA     DECODEMOVEMEA 
 
 printMoveq:
             LEA     MOVEQmsg,A1
@@ -594,17 +616,13 @@ printClr:
             MOVE.B  #14,D0
             TRAP    #15
             
+            MOVE.B  #100,D7
             ; decode size
-            MOVE.W  (A2),D2           ; decode in D2
+            MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            CMP.W   #$0080,D2
-            BEQ     printL
-            CMP.W   #$00C0,D2
-            BEQ     printUnknownSize
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
             
 printBcc:
             LEA     Bccmsg,A1
@@ -617,8 +635,23 @@ printBcc:
          
 printJsr:
             LEA     JSRmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            
+            LEA     DOLLAR_SIGN,A1
+            TRAP    #15
+            
+            ADDA.L  #2,A2
+            MOVE.L  (A2)+,BIN2A_VAL
+            MOVE.L  #32,BIN2A_COUNT
+            JSR     BIN2A_CONVERT
+            
+            LEA     BIN2A_BUFFER,A1
             MOVE.B  #13,D0
             TRAP    #15
+            
+            SUBA.L  #2,A2
+            
             BRA     LOOP
          
 printNop:
@@ -672,6 +705,25 @@ printB:
             MOVE.B  #14,D0
             TRAP    #15
             RTS
+            
+printLaddi:
+            LEA     Lmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            BRA     PRINTADDILONG
+            
+printWaddi:
+            LEA     Wmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            BRA     PRINTADDIWORD
+            
+printBaddi:
+            LEA     Bmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            BRA     PRINTADDIWORD
+
 
 decodeCondition:
             MOVE.W  (A2),D2
@@ -835,7 +887,7 @@ ROLmsg          DC.B    HT,'ROL.',0
 Bccmsg          DC.B    HT,'B',0
 JSRmsg          DC.B    HT,'JSR',HT,0
 RTSmsg          DC.B    HT,'RTS',CR,LF,0
-NOPmsg          DC.B    HT,'NOP',CR,LF,0
+NOPmsg          DC.B    HT,'NOP',0
 
 HImsg           DC.B    'HI',0
 LSmsg           DC.B    'LS',0
@@ -856,6 +908,12 @@ inputSpace  DC.B    '',0            ; don't put any variables after this. or any
 
 EXIT:
     END    START        ; last line of source
+
+
+
+
+
+
 
 
 
