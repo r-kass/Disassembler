@@ -147,15 +147,14 @@ LOOP:
     ADDA.L      #$2,A2 ; this is assuming we load user input's start location -2 into A2 the first time
     
     ; check loop conditions
-    CMP         A3,A2    ; change #$207C to end address GET RID OF ()+ ONCE WE HAVE EA
+    CMP         A3,A2   
     BGE         EXIT  
     
     ; print the binary of the next command
     MOVE.W      (A2),D1
     MOVE.B      #15,D0
     MOVE.B      #16,D2
-    TRAP        #15          ; TODO print msb even if it's zero
-
+    TRAP        #15          
 
     BRA         DECODE
 DECODE:          
@@ -189,21 +188,18 @@ DECODE:
             CMP.W   #$80C0,D2
             BEQ     printDIVU
             
-afterDIVU:
             ; check MULS
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$F1C0,D2
             CMP.W   #$C1C0,D2
             BEQ     printMULS
 
-afterMULS:
             ; check LEA
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$F1C0,D2
             CMP.W   #$41C0,D2
             BEQ     printLEA
 
-afterLEA:
             ; check MOVEQ
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$F100,D2
@@ -216,30 +212,28 @@ afterLEA:
             ANDI.W  #$FB80,D2
             CMP.W   #$4880,D2
 
-afterMOVEM:
             ; check MOVEA   movea if 00xx xxx0 01xx xxxx
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$3000,D2
             CMP.W   #$0000,D2         ; if size code is 0, it's not a movea
-            BEQ     afterMOVE
+
             
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$C1C0,D2
             CMP.W   #$0040,D2
             BEQ     printMOVEA
 
-afterMOVEA:
             ; check MOVE move if 00xx xxxx xxxx xxxx        NEEDS TO BE AFTER MOVEA
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$3000,D2
             CMP.W   #$0000,D2         ; if size code is 0, it's not a move
-            BEQ     afterMOVE
+
             
             MOVE.W  (A2),D2
             ANDI.W  #$C000,D2
             CMP.W   #$0000,D2
             BEQ     printMove
-afterMOVE:
+
             ; check ADDQ
             MOVE.W  (A2),D2
             ANDI.W  #$F100,D2
@@ -335,8 +329,17 @@ printUnknownSize:
             LEA     UnknownSizemsg,A1   
             MOVE.B  #13,D0
             TRAP    #15
-            BRA     LOOP         
-            
+            RTS       
+      
+printSize:
+            CMP.W   #$0000,D2
+            BEQ     printB
+            CMP.W   #$0001,D2
+            BEQ     printW
+            CMP.W   #$0002,D2
+            BEQ     printL
+            BRA     printUnknownSize
+      
 printCMP:
             LEA     CMPmsg,A1
             MOVE.B  #14,D0
@@ -345,13 +348,9 @@ printCMP:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            CMP.W   #$00C0,D2
-            BEQ     printUnknownSize
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
             
 
             
@@ -363,13 +362,10 @@ printAND:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            CMP.W   #$00C0,D2
-            BEQ     printUnknownSize
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
+
 
     
 printOR:
@@ -380,13 +376,10 @@ printOR:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            CMP.W   #$00C0,D2
-            BEQ     printUnknownSize
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
+
             
 printLSL:
             LEA     LSLmsg,A1
@@ -482,13 +475,10 @@ printADD:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            CMP.W   #$00C0,D2
-            BEQ     printUnknownSize
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
+
             
             
 printADDI:
@@ -516,13 +506,10 @@ printSUB:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            CMP.W   #$00C0,D2
-            BEQ     printUnknownSize
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
+
 
 printADDA:
             LEA     ADDAmsg,A1
@@ -561,13 +548,13 @@ printMove:
             ; check size
             MOVE.W  (A2),D2           ; decode in D2
             ANDI.W  #$3000,D2
-            CMP.B   #$1000,D2
+            CMP.W   #$1000,D2
             BEQ     printB
-            CMP.B   #$3000,D2
+            CMP.W   #$3000,D2
             BEQ     printW
-            CMP.B   #$2000,D2
+            CMP.W   #$2000,D2
             BEQ     printL
-            CMP.B   #$0000,D2
+            CMP.W   #$0000,D2
             BEQ     printUnknownSize
 
 
@@ -593,21 +580,23 @@ printLEA:
             LEA     LEAmsg,A1
             MOVE.B  #13,D0
             TRAP    #15
-            BRA     LOOP
+            
+            MOVE.L  #1,D7
+            BRA     DECODEEA
 
 printMuls:
             LEA     MULSmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
             
-            BRA     LOOP
+            BRA     DECODEEA
 
 printDivu:
             LEA     DIVUmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
             
-            BRA     LOOP
+            BRA     DECODEEA
 
 printClr:
             LEA     CLRmsg,A1
@@ -628,9 +617,12 @@ printClr:
 
 printBcc:
             LEA     Bccmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
-            BRA     LOOP
+            
+            JSR     decodeCondition
+            
+            ;BRA     PRINTBCCEA
          
 printJsr:
             LEA     JSRmsg,A1
@@ -655,54 +647,175 @@ printMovea:
             MOVE.B  #14,D0
             TRAP    #15
             
+            MOVE.L  #1,D7
             ;decode size
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$3000,D2
-            CMP.B   #$1000,D2
-            BEQ     printB
-            CMP.B   #$3000,D2
-            BEQ     printW
-            CMP.B   #$2000,D2
-            BEQ     printL
-            CMP.B   #$0000,D2
-            BEQ     printUnknownSize
+            JSR     printSize2
+            BRA     DECODEEA
      
-
+printSize2:
+            ANDI.W  #$3000,D2
+            CMP.W   #$1000,D2
+            BEQ     printB
+            CMP.W   #$3000,D2
+            BEQ     printW
+            CMP.W   #$2000,D2
+            BEQ     printL
+            CMP.W   #$0000,D2
+            BEQ     printUnknownSize
 
 printL:
             LEA     Lmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
-            BRA     LOOP
+            RTS
             
 printW:
             LEA     Wmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
-            BRA     LOOP
+            RTS
             
 printB:
             LEA     Bmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
-            BRA     LOOP
+            RTS
 
+decodeCondition:
+            MOVE.W  (A2),D2
+            ANDI.W  #$0F00,D2
+            CMP.W   #$0200,D2
+            BEQ     printHI
+            CMP.W   #$0300,D2
+            BEQ     printLS
+            CMP.W   #$0400,D2
+            BEQ     printCC
+            CMP.W   #$0500,D2
+            BEQ     printCS
+            CMP.W   #$0600,D2
+            BEQ     printNE
+            CMP.W   #$0700,D2
+            BEQ     printEQ
+            CMP.W   #$0800,D2
+            BEQ     printVC
+            CMP.W   #$0900,D2
+            BEQ     printVS
+            CMP.W   #$0A00,D2
+            BEQ     printPL
+            CMP.W   #$0B00,D2
+            BEQ     printMI
+            CMP.W   #$0C00,D2
+            BEQ     printGE
+            CMP.W   #$0D00,D2
+            BEQ     printLT
+            CMP.W   #$0E00,D2
+            BEQ     printGT
+            CMP.W   #$0F00,D2
+            BEQ     printLE
+            
+            
 
-HT          EQU     $09
-CR          EQU     $0D
-LF          EQU     $0A
+printHI:
+            LEA     HImsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+
+printLS:
+            LEA     LSmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+            
+printCC:
+            LEA     CCmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+            
+printCS:
+            LEA     CSmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+
+printNE:
+            LEA     NEmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+
+printEQ:
+            LEA     EQmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+
+printVC:
+            LEA     VCmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+
+printVS:
+            LEA     VSmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+            
+printPL:
+            LEA     PLmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+            
+printMI:
+            LEA     MImsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+            
+printGE:
+            LEA     GEmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+            
+printLT:
+            LEA     LTmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+            
+printGT:
+            LEA     GTmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS
+    
+printLE:
+            LEA     LEmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            RTS        
+
+            INCLUDE     'EAstuff.X68' 
+
+HT              EQU     $09
+CR              EQU     $0D
+LF              EQU     $0A
 
 AskInputS       DC.B    'Input the 8 digit address of first command in hexadecimal:',CR,LF,0
 AskInputE       DC.B    'Input the 8 digit address of last command:',CR,LF,0
-InvalidHex      DC.B    'Invalid hexidecimal number, try again.',CR,LF,'(TIP: use all caps for letters)',CR,LF,0
+InvalidHex      DC.B    'Invalid hexidecimal number, try again.',CR,LF,'(TIP: use all caps E00for letters)',CR,LF,0
 endb4start      DC.B    'End address is not after start address, try again.',CR,LF,0
 wronglength     DC.B    'Input was not 8 digits, try again.',CR,LF,'(TIP: add leading 0s if needed)',CR,LF,0
 overlapMsg      DC.B    'This overlaps with the disassembler, try again.',CR,LF,0
-newLine         DC.B    CR,LF,0
 
-Lmsg            DC.B    'L',CR,LF,0
-Wmsg            DC.B    'W',CR,LF,0
-Bmsg            DC.B    'B',CR,LF,0
+Lmsg            DC.B    'L',HT,0
+Wmsg            DC.B    'W',HT,0
+Bmsg            DC.B    'B',HT,0
 
 UnknownSizemsg  DC.B    'UNKOWNSIZE',CR,LF,0
 UNKNOWNmsg      DC.B    HT,'INVALED',CR,LF,0
@@ -711,10 +824,10 @@ ADDImsg         DC.B    HT,'ADDI.',0
 MOVEAmsg        DC.B    HT,'MOVEA.',0
 ADDAmsg         DC.B    HT,'ADDA.',0
 MOVEMmsg        DC.B    HT,'MOVEM.',0
-MOVEQmsg        DC.B    HT,'MOVEQ',CR,LF,0
-MULSmsg         DC.B    HT,'MULS',CR,LF,0
-DIVUmsg         DC.B    HT,'DIVU',CR,LF,0
-LEAmsg          DC.B    HT,'LEA',CR,LF,0
+MOVEQmsg        DC.B    HT,'MOVEQ',HT,0
+MULSmsg         DC.B    HT,'MULS',HT,0
+DIVUmsg         DC.B    HT,'DIVU',HT,0
+LEAmsg          DC.B    HT,'LEA',HT,0
 CMPmsg          DC.B    HT,'CMP.',0
 CLRmsg          DC.B    HT,'CLR.',0
 ANDmsg          DC.B    HT,'AND.',0
@@ -728,15 +841,32 @@ ASRmsg          DC.B    HT,'ASR.',0
 ASLmsg          DC.B    HT,'ASL.',0
 RORmsg          DC.B    HT,'ROR.',0
 ROLmsg          DC.B    HT,'ROL.',0
-Bccmsg          DC.B    HT,'Bcc',CR,LF,0
-JSRmsg          DC.B    HT,'JSR',CR,LF,0
+Bccmsg          DC.B    HT,'B',0
+JSRmsg          DC.B    HT,'JSR',HT,0
 RTSmsg          DC.B    HT,'RTS',CR,LF,0
 NOPmsg          DC.B    HT,'NOP',CR,LF,0
+
+HImsg           DC.B    'HI',0
+LSmsg           DC.B    'LS',0
+CCmsg           DC.B    'CC',0
+CSmsg           DC.B    'CS',0
+NEmsg           DC.B    'NE',0
+EQmsg           DC.B    'EQ',0
+VCmsg           DC.B    'VC',0
+VSmsg           DC.B    'VS',0
+PLmsg           DC.B    'PL',0
+MImsg           DC.B    'MI',0
+GEmsg           DC.B    'GE',0
+LTmsg           DC.B    'LT',0
+GTmsg           DC.B    'GT',0
+LEmsg           DC.B    'LE',0
 
 inputSpace  DC.B    '',0            ; don't put any variables after this. or anything at all. IT'S IMPORTANT THAT THIS IS THE END, OK!?!?!?
 
 EXIT:
     END    START        ; last line of source
+
+
 
 
 

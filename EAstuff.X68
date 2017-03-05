@@ -30,11 +30,7 @@
 *       JMP      EAREG000   ; Absolute data addressing [short, long]
 *       JMP      EAREG100   ; Immediate add
 
-    ORG    $1000
     
-START:                    ; first instruction of program
-
-
 **************TESTING TINGS***********************
     MOVE.L #$48F9001E, TESTLOC      ; temp EA code - SHOULD PRINT: A1
     LEA     TESTLOC, A2       ; load the address pointer
@@ -112,8 +108,31 @@ EAMODE000: *-------------------- Data register direct --------------------------
         MOVE.B   #14,D0
         TRAP     #15
 
+        LEA      COMMA,A1
+        TRAP     #15
+        
+        CMP.B    #1,D7
+        BEQ      PRINTA000
+        LEA      DATA_REG, A1
+CONTMODE000:     
+        TRAP     #15
+        MOVE.W   (A2),D2
+        LSR.W    #8,D2
+        LSR.W    #1,D2
+        MOVE.L   D2, BIN2A_VAL
+        MOVE.L   #4, BIN2A_COUNT
+        JSR      BIN2A_CONVERT
+        
+        LEA      BIN2A_BUFFER,A1
+        MOVE.B   #14,D0
+        TRAP     #15
+
         BRA EAEXIT                    ; branch to exit   
 
+PRINTA000:
+        LEA     ADD_REG,A1
+        BRA     CONTMODE000
+        
 EAMODE001: *-------------------- Address register direct -------------------------------
 
         LEA     ADD_REG, A1
@@ -128,7 +147,31 @@ EAMODE001: *-------------------- Address register direct -----------------------
         MOVE.B   #14,D0
         TRAP     #15
 
-        BRA EAEXIT      
+              LEA      COMMA,A1
+        TRAP     #15
+        
+        CMP.B    #1,D7
+        BEQ      PRINTA001
+        LEA      DATA_REG, A1
+CONTMODE001:     
+        TRAP     #15
+        MOVE.W   (A2),D2
+        LSR.W    #8,D2
+        LSR.W    #1,D2
+        MOVE.L   D2, BIN2A_VAL
+        MOVE.L   #4, BIN2A_COUNT
+        JSR      BIN2A_CONVERT
+        
+        LEA      BIN2A_BUFFER,A1
+        MOVE.B   #14,D0
+        TRAP     #15
+
+        BRA EAEXIT                    ; branch to exit   
+
+PRINTA001:
+        LEA     ADD_REG,A1
+        BRA     CONTMODE000
+     
 
 
 EAMODE010: *--------- Address register indirect: sends address value ----------------
@@ -466,7 +509,12 @@ PRINTADDILONG:
 
 EAEXIT: ; SET ERROR FLAG TODO
         MOVEM.L (A7)+, D0-D7/A1/A3-A6 ; put everything back on the stack
-        RTS                         ; return to sender
+        CLR.L   D7
+        LEA     NEWLINE,A1
+        MOVE.B  #14,D0
+        TRAP    #15
+        
+        BRA     LOOP                  ; return to sender
 
 *---------------BINARY TO ASCII CONVERSION -------------------------------
 BIN2A_VAL    DS.L 1  ; input number for our conversion
@@ -506,7 +554,11 @@ BIGNUM
 *------------------------------------------------------------------------
 
 *---------------------- Symbols ----------------------------
+CR                  EQU         $0D
+LF                  EQU         $0A
 
+
+NEWLINE             DC.B        CR,LF,0
 PARENTHESIS_1       DC.B        '(', 0
 PARENTHESIS_2       DC.B        ')', 0
 PLUS_SIGN           DC.B        '+', 0
@@ -524,9 +576,15 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
 
 * Put variables and constants here
 
-    END    START        ; last line of source
+  ;  END    START        ; last line of source
 
     
+
+
+
+
+
+
 
 *~Font name~Courier New~
 *~Font size~10~
