@@ -30,11 +30,7 @@
 *       JMP      EAREG000   ; Absolute data addressing [short, long]
 *       JMP      EAREG100   ; Immediate add
 
-    ORG    $1000
     
-START:                    ; first instruction of program
-
-
 **************TESTING TINGS***********************
     MOVE.L #$48F9001E, TESTLOC      ; temp EA code - SHOULD PRINT: A1
     LEA     TESTLOC, A2       ; load the address pointer
@@ -112,8 +108,39 @@ EAMODE000: *-------------------- Data register direct --------------------------
         MOVE.B   #14,D0
         TRAP     #15
 
+        CMP.B   #100,D7
+        BEQ     EAEXIT
+
+        LEA      COMMA,A1
+        TRAP     #15
+        
+        CMP.B    #1,D7
+        BEQ      PRINTA000
+        
+        LEA      DATA_REG, A1
+CONTMODE000:     
+        TRAP     #15
+        MOVE.W   (A2),D2
+        LSR.W    #8,D2
+        LSR.W    #1,D2
+        ANDI.W   #$0007,D2
+        MOVE.L   D2, BIN2A_VAL
+        MOVE.L   #4, BIN2A_COUNT
+        JSR      BIN2A_CONVERT
+        
+        LEA      BIN2A_BUFFER,A1
+        MOVE.B   #14,D0
+        TRAP     #15
+
+       ; CMP.B    #2,D7
+       ; BEQ      MOVEEA
         BRA EAEXIT                    ; branch to exit   
 
+PRINTA000:
+        LEA     ADD_REG,A1
+        BRA     CONTMODE000
+
+        
 EAMODE001: *-------------------- Address register direct -------------------------------
 
         LEA     ADD_REG, A1
@@ -128,7 +155,32 @@ EAMODE001: *-------------------- Address register direct -----------------------
         MOVE.B   #14,D0
         TRAP     #15
 
-        BRA EAEXIT      
+              LEA      COMMA,A1
+        TRAP     #15
+        
+        CMP.B    #1,D7
+        BEQ      PRINTA001
+        CMP.B    #2,D7
+        LEA      DATA_REG, A1
+CONTMODE001:     
+        TRAP     #15
+        MOVE.W   (A2),D2
+        LSR.W    #8,D2
+        LSR.W    #1,D2
+        MOVE.L   D2, BIN2A_VAL
+        MOVE.L   #4, BIN2A_COUNT
+        JSR      BIN2A_CONVERT
+        
+        LEA      BIN2A_BUFFER,A1
+        MOVE.B   #14,D0
+        TRAP     #15
+
+        BRA EAEXIT                    ; branch to exit   
+
+PRINTA001:
+        LEA     ADD_REG,A1
+        BRA     CONTMODE000
+     
 
 
 EAMODE010: *--------- Address register indirect: sends address value ----------------
@@ -298,13 +350,14 @@ SHORT000 ; branch
       CLR.L   D6
 
       MOVE.W  (A2),D6  
-      ;MOVE.W  #4, D5
-      MOVE.L  D6,BIN2A_VAL
-      MOVE.L  #16,BIN2A_COUNT 
+      MOVE.L  #0, BIN2A_VAL      
+      MOVE.L  D6, BIN2A_VAL
+      MOVE.L  #16, BIN2A_COUNT
       JSR     BIN2A_CONVERT
 
+
       LEA     BIN2A_BUFFER,A1
-      MOVE.B  #13,D0
+      MOVE.B  #14,D0
       TRAP    #15
 
       ADDA.W  #2, A1  ; move along 32 bit extension
@@ -375,7 +428,7 @@ PRINTMOVEMD:
  *    SUBI.L  #1, D6
       
       MOVE.B  D6, BIN2A_VAL
-      MOVE.L  #8, BIN2A_CONVERT
+      MOVE.L  #8, BIN2A_COUNT
       JSR     BIN2A_CONVERT
 
       ADDA.W   #8, A1 
@@ -406,28 +459,61 @@ PRINTMOVEMA:
       BRA MOVEMEALOOP
 *-----------------------------END MOVEA SUBROUTINES-------------------------------*
       
+MOVEEA: 
+      MOVE.W    (A2),D6
+      LSR.W     #8,D6
+      LSR.W     #1,D6
+      ANDI.W    #0003,D6
+      MOVE.W    D6,D5
+      MOVE.W    (A2),D6
+      LSR.W     #3,D6
+      ANDI.W    #$003F,D6
+      ADD.W     D5,D6
+      MOVE.W    D6,(A2)
+      MOVE.B    #100,D7
+      BRA       DECODEEA
+      
+      
+      
 BCCEA: ;special case 
-      ADDA.L   #2, A2
-      MOVE.B  (A2),D1  ; only move last byte
-      MOVE.B   #14,D0
-      TRAP     #15
+
+      MOVE.W    (A2),D6  ; only move last byte
+      MOVE.B    D6,BIN2A_VAL
+      MOVE.B    #8,BIN2A_COUNT
+      
+      MOVE.B    #14,D0
+      TRAP      #15
 
       BRA EAEXIT      
       
 MOVEQEA: ;special case 
 
-      ;ADDA.L   #2, A2
-      MOVE.B  (A2),D3  ; only move last byte
-      ANDI.B   #$3F,D3
-      MOVE.B   D3,BIN2A_VAL
-      MOVE.B   #16,BIN2A_COUNT
-      JSR      BIN2A_CONVERT 
+      LEA       POUND,A1
+      MOVE.B    #14,D0
+      TRAP      #15
 
-      LEA      BIN2A_BUFFER,A1
-      MOVE.B   #14,D0
-      TRAP     #15
+      MOVE.W    (A2),D1  ; only move last byte
+      ANDI.W    #$003F,D1
+      MOVE.B    #3,D0
 
-      BRA EAEXIT      
+      TRAP      #15
+      
+      LEA       COMMA,A1
+      MOVE.B    #14,D0
+      TRAP      #15
+
+      LEA       DATA_REG,A1
+      TRAP      #15
+
+      MOVE.W    (A2),D1
+      ANDI.W    #$0E00,D1
+      LSR.W     #8,D1
+      LSR.W     #1,D1
+      
+      MOVE.B    #3,D0
+      TRAP      #15
+      
+      BRA EAEXIT        
 
 PRINTADDIBYTE:
       ADDA.W  #1, A2 ; read following word from memory
@@ -441,6 +527,7 @@ PRINTADDIBYTE:
       MOVE.B   #14,D0
       TRAP     #15
 
+ 
       BRA     EAEXIT        
 
 
@@ -477,8 +564,13 @@ PRINTADDILONG:
 
 
 EAEXIT: ; SET ERROR FLAG TODO
-        MOVEM.L (A7)+, D0-D7/A1/A3-A6 ; put everything back on the stack
-        RTS                         ; return to sender
+        MOVEM.L (A7)+, D0-D7/A1/A4-A6 ; put everything back on the stack
+        MOVE.L  #0,D7
+        LEA     NEWLINE,A1
+        MOVE.B  #14,D0
+        TRAP    #15
+        
+        BRA     LOOP                  ; return to sender
 
 *---------------BINARY TO ASCII CONVERSION -------------------------------
 BIN2A_VAL    DS.L 1  ; input number for our conversion
@@ -493,7 +585,7 @@ BIN2A_CONVERT:
 
 BIN2A_LOOP:
         SUB.L    #4, D2     ; decrement by 
-        MOVE.L    BIN2A_VAL,D1 ; copy the input value
+        MOVE.L   BIN2A_VAL,D1 ; copy the input value
         LSR.L    D2, D1
         ANDI.L   #$F, D1  ; truncate
         CMP.B    #10, D1
@@ -502,7 +594,7 @@ BIN2A_LOOP:
         
 BIN2A_LOOP2
         MOVE.B   D1, (A0)+ ; write character and increment buffer pointer
-        CMPI.L   #0, D2    ; check if counter is 0
+        CMPI.W   #0, D2    ; check if counter is 0
         BEQ      BIN2A_EXIT
         BRA      BIN2A_LOOP
         
@@ -518,7 +610,11 @@ BIGNUM
 *------------------------------------------------------------------------
 
 *---------------------- Symbols ----------------------------
+CR                  EQU         $0D
+LF                  EQU         $0A
 
+
+NEWLINE             DC.B        CR,LF,0
 PARENTHESIS_1       DC.B        '(', 0
 PARENTHESIS_2       DC.B        ')', 0
 PLUS_SIGN           DC.B        '+', 0
@@ -536,10 +632,7 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
 
 * Put variables and constants here
 
-    END    START        ; last line of source
-
-    
-
+  ;  END    START        ; last line of source
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

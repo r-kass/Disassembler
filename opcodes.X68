@@ -531,31 +531,22 @@ printADDQ:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            CMp.W   #$0080,D2
-            BEQ     printL
-            CMP.W   #$00C0,D2
-            BEQ     printUnknownSize
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
             
 printMove:
             LEA     MOVEmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
             
+            MOVE.B  #2,D7
+            
             ; check size
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$3000,D2
-            CMP.W   #$1000,D2
-            BEQ     printB
-            CMP.W   #$3000,D2
-            BEQ     printW
-            CMP.W   #$2000,D2
-            BEQ     printL
-            CMP.W   #$0000,D2
-            BEQ     printUnknownSize
+            JSR     printSize2
+            BRA     DECODEEA
+
 
 
 
@@ -614,7 +605,7 @@ printClr:
             BEQ     printL
             CMP.W   #$00C0,D2
             BEQ     printUnknownSize
-
+            
 printBcc:
             LEA     Bccmsg,A1
             MOVE.B  #14,D0
@@ -865,6 +856,8 @@ inputSpace  DC.B    '',0            ; don't put any variables after this. or any
 
 EXIT:
     END    START        ; last line of source
+
+
 
 
 

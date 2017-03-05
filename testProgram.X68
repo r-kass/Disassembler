@@ -28,18 +28,18 @@
 *    
 *    * ADD commands
 *    ;ADD.B  #$12,D0
-    ADD.B  D1,D0
+    ADD.B  D1,D3
 *    
 *   ; ADD.W  #$1234,D0
-    ADD.W  D1,D0
+    ADD.W  D1,D3
 *    
 *    ;ADD.L  #$12345678,D0
-    ADD.L  D1,D0
+    ADD.L  D1,D3
 *
 *    * ADDQ
-*    ADDQ.B  #5,D1
-*    ADDQ.W  #5,D1
-*    ADDQ.L  #5,D1
+    ADDQ.B  #5,D1
+    ADDQ.W  #5,D1
+    ADDQ.L  #5,D1
 *    
 *    * ADDI
 *    ;ADDI.B   #40,D1
@@ -53,22 +53,22 @@
 *    
 *    * MOVE commands
 *    ;MOVE.B  #$12,D0
-*    MOVE.B  D1,D0
+    MOVE.B  D1,D3
 *    
 *   ; MOVE.W  #$1234,D0
-*    MOVE.W  D1,D0
+    MOVE.W  D1,D3
 *    
 *    ;MOVE.L  #$12345678,D0
-*    MOVE.L  D1,D0
+    MOVE.L  D1,D3
 *    
 *    ;MOVE.W  $2002(PC),D0
 *    
 *    * MOVEA commands    
 *   ; MOVEA.W #$1234,A0
-    MOVEA.W A1,A0
+    MOVEA.W A1,A3
 *    
 *   ; MOVEA.L #$12345678,A0
-    MOVEA.L A1,A0
+    MOVEA.L A1,A3
 *    
 *    * ADDA
 *    ADDA.W    A1,A2
@@ -78,7 +78,7 @@
 *    ;MOVEM   D0-D7/A1-A4,EXIT    ;loads all the listed registers to memory at exit 
 *    
 *    * MOVEQ commands
-    MOVEQ   #$12,D0
+    MOVEQ   #$12,D3
 *
 *    * MULS
     MULS    D1,D2
@@ -175,6 +175,7 @@
 *
 *
 *
+
 
 
 *~Font name~Courier New~
