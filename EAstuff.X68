@@ -32,7 +32,7 @@
 
     
 **************TESTING TINGS***********************
-    MOVE.L #$48F9001E, TESTLOC      ; temp EA code - SHOULD PRINT: A1
+    MOVE.L #$48F9101E, TESTLOC      ; temp EA code - SHOULD PRINT: A1
     LEA     TESTLOC, A2       ; load the address pointer
     MOVEA.L #$01000000,A7   ; init the stack pointer
     JSR     MOVEMEA
@@ -391,72 +391,77 @@ EAERROR:
 *-----------------------------SPECIAL SNOWFLAKES-------------------------------*
 
 *-----------------------------MOVEM SUBROUTINES-------------------------------*
+MOVEMSET DS.B 0 ; 0 if set bits, else 1
+
+
 MOVEMEA:  ; if  first half : An , second half: Dn
        CLR.W   D7
 
        MOVE.W  (A2)+,D3     ; opcode
-       MOVE.W  (A2),D1   ; get copy of all 16 bits
-
-*       MOVE.W  (A2),D2      ; copy for register bits 
-*       ANDI.W #$FF00, D1    ; address register thingy
-*       ANDI.W #$00FF, D2    ; data register thingy
-
+       MOVE.W  (A2),D5   ; get copy of all 16 bits
 
        MOVE.L  #$0, D4   ; counter for loop
 
-MOVEMEALOOP:
-       LSR.W   #1, D1
-      BCS     PRINTMOVEM               ;branch if a 1 is shifted out
-      
-       ADD.L   #1, D4    ; increment counter
-       CMPI.L  #$15, D4    ; break loop here 
 
+MOVEMEALOOP:
+
+       ADD.L   #$1, D4    ; increment counter
+       CMPI.L  #$F, D4    ; break loop here 
+       BEQ     EAEXIT
+
+  
+       LSR.W   #1, D5
+       BCS     PRINTMOVEM               ;branch if a 1 is shifted out
        BRA     MOVEMEALOOP
 
-PRINTMOVEMEA:
-      CMPI.L  #8, D4
+PRINTMOVEM:
+      CMPI.B   #1, MOVEMSET
+      BEQ      PRINTSLASH
+      
+PRINTMOVEM2:
+      MOVE.B   #1, MOVEMSET
+      CMPI.L   #7, D4
 
-      BGE     PRINTMOVEMA 
-      BRA     PRINTMOVEMD
+      BLE      PRINTMOVEMD 
+      BRA      PRINTMOVEMA
       
 PRINTMOVEMD:
-      LEA     DATA_REG, A1
-      MOVE.B  #14,D0
-      TRAP    #15
-
-      MOVE.L   D4,D6   ; copy count to D6
- *    SUBI.L  #1, D6
-      
-      MOVE.B  D6, BIN2A_VAL
-      MOVE.L  #8, BIN2A_COUNT
-      JSR     BIN2A_CONVERT
-
-      ADDA.W   #8, A1 
-      LEA      BIN2A_BUFFER, A1
+      LEA      DATA_REG, A1
       MOVE.B   #14,D0
       TRAP     #15
 
-      BRA MOVEMEALOOP
+      MOVE.L   D4,D6   ; copy count to D6
+      SUBI.L   #1, D6
+      
+      MOVE.W   D6,D1
+      MOVE.B   #3,D0
+      TRAP     #15
+
+      BRA      MOVEMEALOOP
 
 
 PRINTMOVEMA:
-      LEA    ADD_REG, A1
+      LEA     ADD_REG, A1
+
       MOVE.B  #14,D0
       TRAP    #15
 
-      MOVE.L   D4,D6   ; copy count to D6
-  *   SUBI.L  #1, D6
+      MOVE.L  D4,D6   ; copy count to D6
+      SUBI.L  #8, D6
       
-      MOVE.B  D6, BIN2A_VAL
-      MOVE.W  #16, BIN2A_COUNT
-      JSR     BIN2A_CONVERT
+      MOVE.B  D6,D1
+      MOVE.B  #3,D0
+      TRAP    #15
 
-  *   ADDA.W   #2, A1 
-      LEA      BIN2A_BUFFER, A1
-      MOVE.B   #14,D0
-      TRAP     #15
-      
       BRA MOVEMEALOOP
+
+PRINTSLASH
+
+      LEA     SLASH, A1
+      MOVE.B  #14,D0
+      TRAP    #15
+      BRA     PRINTMOVEM2
+
 *-----------------------------END MOVEA SUBROUTINES-------------------------------*
       
 MOVEEA: 
@@ -637,3 +642,4 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+  
