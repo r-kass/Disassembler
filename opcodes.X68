@@ -572,13 +572,13 @@ printMovem:
 
 printMoveq:
             LEA     MOVEQmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
-            BRA     LOOP
+            BRA     MOVEQEA
 
 printLEA:
             LEA     LEAmsg,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
             
             MOVE.L  #1,D7
@@ -865,6 +865,7 @@ inputSpace  DC.B    '',0            ; don't put any variables after this. or any
 
 EXIT:
     END    START        ; last line of source
+
 
 
 

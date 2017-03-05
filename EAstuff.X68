@@ -298,8 +298,14 @@ SHORT000 ; branch
       CLR.L   D6
 
       MOVE.W  (A2),D6  
-      MOVE.W  #4, D5
+      ;MOVE.W  #4, D5
+      MOVE.L  D6,BIN2A_VAL
+      MOVE.L  #16,BIN2A_COUNT 
       JSR     BIN2A_CONVERT
+
+      LEA     BIN2A_BUFFER,A1
+      MOVE.B  #13,D0
+      TRAP    #15
 
       ADDA.W  #2, A1  ; move along 32 bit extension
 
@@ -354,7 +360,7 @@ MOVEMEALOOP:
 
        BRA     MOVEMEALOOP
 
-PRINTMOVEM:
+PRINTMOVEMEA:
       CMPI.L  #8, D4
 
       BGE     PRINTMOVEMA 
@@ -410,8 +416,14 @@ BCCEA: ;special case
       
 MOVEQEA: ;special case 
 
-      ADDA.L   #2, A2
-      MOVE.B  (A2), D1  ; only move last byte
+      ;ADDA.L   #2, A2
+      MOVE.B  (A2),D3  ; only move last byte
+      ANDI.B   #$3F,D3
+      MOVE.B   D3,BIN2A_VAL
+      MOVE.B   #16,BIN2A_COUNT
+      JSR      BIN2A_CONVERT 
+
+      LEA      BIN2A_BUFFER,A1
       MOVE.B   #14,D0
       TRAP     #15
 

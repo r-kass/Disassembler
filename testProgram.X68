@@ -78,7 +78,7 @@
 *    ;MOVEM   D0-D7/A1-A4,EXIT    ;loads all the listed registers to memory at exit 
 *    
 *    * MOVEQ commands
-*    MOVEQ   #$12,D0
+    MOVEQ   #$12,D0
 *
 *    * MULS
     MULS    D1,D2
@@ -175,6 +175,7 @@
 *
 *
 *
+
 
 *~Font name~Courier New~
 *~Font size~10~
