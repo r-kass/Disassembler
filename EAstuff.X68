@@ -422,25 +422,26 @@ EAERROR:
 *-----------------------------SPECIAL SNOWFLAKES-------------------------------*
 
 *-----------------------------MOVEM SUBROUTINES-------------------------------*
-MOVEMSET        DS.B 0 ; 0 if set bits, else 1
-MOVEMMEMCOUNT   DS.B 0 ; 0 if memory is already printed, otherwise 1
-MOVEMCOUNT      DS.B 0 ; 0 if other stuff is already printed, otherwise 1
-
+MOVEMSET            DS.B 0 ; 0 if set bits, else 1
 DECODEMOVEMEA:
+       MOVE.B  #0,MOVEMSET
+       ;MOVE.B  #0,MOVEMMEMCOUNT
+       ;MOVE.B  #0,MOVEMCOUNT
+       ;MOVE.B  #0,MOVEMDIRECTION      
        MOVEM.L D0-D7/A1/A3-A6,-(A7)
        MOVE.W   (A2)+,D3     ; opcode
        ANDI.W   #$0400, D3
        CMPI.W   #$0, D3
        BEQ      MOVEMEA
-       MOVE.B   #$1, MOVEMMEMCOUNT 
-       BRA      MOVEMEAMEM
+       ;MOVE.B   #$1,MOVEMDIRECTION
+       ;BRA      MOVEMEAMEM
         
 MOVEMEAMEM:
 
         
-       CMPI.W   #$1, MOVEMMEMCOUNT 
-       BEQ      MOVEMEXIT
-       MOVE.B    #1,MOVEMMEMCOUNT
+       ;CMPI.W   #$1, MOVEMMEMCOUNT 
+       ;BEQ      MOVEMEXIT
+       ;MOVE.B    #1,MOVEMMEMCOUNT
        MOVEA.W  A2, A3
        ADDA.W   #4, A3
        MOVE.L   #32,BIN2A_COUNT
@@ -452,40 +453,62 @@ MOVEMEAMEM:
        MOVE.B   #14,D0
        TRAP     #15
        
-       CMPI.B   #$1, MOVEMCOUNT
-       BEQ      MOVEMCOMMAR
-       BRA      MOVEMEXIT
+       SUB.W    #2,A2
+       MOVE.W   (A2)+,D3     ; opcode
+       ANDI.W   #$0400, D3
+       CMPI.W   #$0, D3
+       BEQ      MOVEMEXIT
+       
+       LEA      COMMA,A1
+       TRAP     #15
        
 MOVEMEA:  
        CLR.W   D7
        MOVE.W  (A2),D5   ; get copy of all 16 bits
 
        MOVE.L  #$0, D4   ; counter for loop
-       CMPI.W  #$1, MOVEMCOUNT
+       ;CMPI.W  #$1, MOVEMCOUNT
 
 MOVEMEALOOP:
 
        ADD.L   #$1, D4    ; increment counter
        CMPI.L  #$F, D4    ; break loop here
-       BEQ     MOVEMCOMMAM
+       BEQ     EXITMOVEMEALOOP
          
        LSR.W   #1, D5
        BCS     PRINTMOVEMEA               ;branch if a 1 is shifted out
        BRA     MOVEMEALOOP
 
-MOVEMCOMMAM
-       CMP.B    #1, MOVEMCOUNT
-       BEQ      MOVEMEXIT
+EXITMOVEMEALOOP:
+       SUB.W    #2,A2
+       MOVE.W   (A2)+,D3     ; opcode
+       ANDI.W   #$0400, D3
+       CMPI.W   #$0, D3
+       BNE      MOVEMEXIT
+
+       
        LEA      COMMA,A1
        MOVE.B   #14,D0
        TRAP     #15
        BRA      MOVEMEAMEM
+
+;MOVEMCOMMAM
+       ;CMP.B    #0, MOVEMCOUNT
+       ;BEQ      MOVEMEXIT
+       ;MOVE.B   #1, MOVEMCOUNT
+       ;LEA      COMMA,A1
+       ;MOVE.B   #14,D0
+       ;TRAP     #15
+       ;BRA      MOVEMEAMEM
        
-MOVEMCOMMAR
-       LEA      COMMA,A1
-       MOVE.B   #14,D0
-       TRAP     #15
-       BRA      MOVEMEA       
+;MOVEMCOMMAR
+       ;CMP.B    #0, MOVEMMEMCOUNT
+       ;BEQ      MOVEMEXIT
+       ;MOVE.B   #1, MOVEMMEMCOUNT
+       ;LEA      COMMA,A1
+       ;MOVE.B   #14,D0
+       ;TRAP     #15
+       ;BRA      MOVEMEA       
        
 
 PRINTMOVEMEA:
@@ -537,7 +560,13 @@ PRINTSLASH
       BRA     PRINTMOVEM2
 
 MOVEMEXIT:
-      ADDA.L  #6,A2
+      
+      
+      LEA     NEWLINE,A1
+      MOVE.B  #14,D0
+      TRAP    #15
+      
+      ADDA.L  #4,A2
       BRA     EAEXIT
 *-----------------------------END MOVEA SUBROUTINES-------------------------------*
       
@@ -569,7 +598,7 @@ BCCEA: ;special case
       BRA EAEXIT      
       
 MOVEQEA: ;special case 
-
+      MOVEM.L D0-D7/A1/A3-A6,-(A7)
       LEA       POUND,A1
       MOVE.B    #14,D0
       TRAP      #15
@@ -681,7 +710,7 @@ PRINTADDILONG:
 
 
 EAEXIT: ; SET ERROR FLAG TODO
-        MOVEM.L (A7)+, D0-D7/A1/A3-A6 ; put everything back on the stack
+        MOVEM.L (A7)+,D0-D7/A1/A3-A6 ; put everything back on the stack
         MOVE.L  #0,D7
         LEA     NEWLINE,A1
         MOVE.B  #14,D0
@@ -730,6 +759,9 @@ BIGNUM
 CR                  EQU         $0D
 LF                  EQU         $0A
 
+;MOVEMMEMCOUNT       DS.B 0 ; 0 if memory is already printed, otherwise 1
+;MOVEMCOUNT          DS.B 0 ; 0 if other stuff is already printed, otherwise 1
+;MOVEMDIRECTION      DS.B 0
 
 NEWLINE             DC.B        CR,LF,0
 PARENTHESIS_1       DC.B        '(', 0
@@ -752,6 +784,7 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
   ;  END    START        ; last line of source
 *~Font name~Courier New~
   
+
 
 
 

@@ -153,9 +153,13 @@ LOOP:
     BGE         EXIT  
     
     ; print the binary of the next command
-    MOVE.W      (A2),D1
-    MOVE.B      #15,D0
-    MOVE.B      #16,D2
+    MOVE.W      (A2),D3
+    MOVE.L      D3,BIN2A_VAL
+    MOVE.L      #16,BIN2A_COUNT
+    JSR         BIN2A_CONVERT
+    
+    LEA         BIN2A_BUFFER,A1
+    MOVE.B      #14,D0
     TRAP        #15          
 
     BRA         DECODE
@@ -392,14 +396,13 @@ printLSL:
             MOVE.B  #14,D0
             TRAP    #15
             
+            MOVE.B  #1,D7
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
 
 
 printLSR:
@@ -410,11 +413,9 @@ printLSR:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
 
 printASL:
             LEA     ASLmsg,A1
@@ -424,11 +425,9 @@ printASL:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
 
 printASR:
             LEA     ASRmsg,A1
@@ -438,11 +437,9 @@ printASR:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
 
 printROL:
             LEA     ROLmsg,A1
@@ -452,11 +449,9 @@ printROL:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
             
 printROR:
             LEA     RORmsg,A1
@@ -467,11 +462,9 @@ printROR:
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
-            CMP.W   #$0000,D2
-            BEQ     printB
-            CMP.W   #$0040,D2
-            BEQ     printW
-            BRA     printL
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA
             
 printADD:
             LEA     ADDmsg,A1
@@ -525,13 +518,25 @@ printADDA:
             LEA     ADDAmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
-
+             
+            MOVE.B  #1,D7
             ; check size
-            MOVE.W  (A2),D2
-            ANDI.W  #$0100,D2
-            CMP.W   #$0100,D2
-            BEQ     printL
-            BRA     printW
+            MOVE.W  (A2),D2           ; decode in D2
+            LSR.W   #8,D2
+            ANDI.W  #1,D2
+            CMP.W   #0,D2
+            BEQ     PRINTADDAW
+            LEA     Lmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            
+            
+            BRA     DECODEEA
+PRINTADDAW:
+            LEA     Wmsg,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            BRA     DECODEEA
 
 printADDQ:
             LEA     ADDQmsg,A1
@@ -631,8 +636,21 @@ printBcc:
             
             JSR     decodeCondition
             
-            ;BRA     PRINTBCCEA
+            LEA     DOLLAR_SIGN,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            
+            ADDA.L  #2,A2
+            MOVE.W  (A2),D3
+            MOVE.L  D3,BIN2A_VAL
+            MOVE.L  #16,BIN2A_COUNT
+            JSR     BIN2A_CONVERT
+            
+            LEA     BIN2A_BUFFER,A1
+            MOVE.B  #13,D0
+            TRAP    #15
          
+            BRA     LOOP
 printJsr:
             LEA     JSRmsg,A1
             MOVE.B  #14,D0
@@ -843,7 +861,7 @@ printLE:
             TRAP    #15
             RTS        
 
-            INCLUDE     'EAstuff.X68' 
+    INCLUDE     'EAstuff.X68'             
 
 HT              EQU     $09
 CR              EQU     $0D
@@ -889,25 +907,26 @@ JSRmsg          DC.B    HT,'JSR',HT,0
 RTSmsg          DC.B    HT,'RTS',CR,LF,0
 NOPmsg          DC.B    HT,'NOP',0
 
-HImsg           DC.B    'HI',0
-LSmsg           DC.B    'LS',0
-CCmsg           DC.B    'CC',0
-CSmsg           DC.B    'CS',0
-NEmsg           DC.B    'NE',0
-EQmsg           DC.B    'EQ',0
-VCmsg           DC.B    'VC',0
-VSmsg           DC.B    'VS',0
-PLmsg           DC.B    'PL',0
-MImsg           DC.B    'MI',0
-GEmsg           DC.B    'GE',0
-LTmsg           DC.B    'LT',0
-GTmsg           DC.B    'GT',0
-LEmsg           DC.B    'LE',0
-
-inputSpace  DC.B    '',0            ; don't put any variables after this. or anything at all. IT'S IMPORTANT THAT THIS IS THE END, OK!?!?!?
+HImsg           DC.B    'HI',HT,0
+LSmsg           DC.B    'LS',HT,0
+CCmsg           DC.B    'CC',HT,0
+CSmsg           DC.B    'CS',HT,0
+NEmsg           DC.B    'NE',HT,0
+EQmsg           DC.B    'EQ',HT,0
+VCmsg           DC.B    'VC',HT,0
+VSmsg           DC.B    'VS',HT,0
+PLmsg           DC.B    'PL',HT,0
+MImsg           DC.B    'MI',HT,0
+GEmsg           DC.B    'GE',HT,0
+LTmsg           DC.B    'LT',HT,0
+GTmsg           DC.B    'GT',HT,0
+LEmsg           DC.B    'LE',HT,0
+    
+inputSpace  DS.L    0            ; don't put any variables after this. or anything at all. IT'S IMPORTANT THAT THIS IS THE END, OK!?!?!?
 
 EXIT:
     END    START        ; last line of source
+
 
 
 
