@@ -8,7 +8,7 @@
 
     * CMP
     CMP.B   D1,D2 ;CMP.B	D1,D2
-    CMP.W   D3,D4 ;CMP.W	D3,D4
+    CMP.W   A3,D4 ;CMP.W	D3,D4
     CMP.L   D1,D2 ;CMP.L	D1,D2
     
     * CLR
@@ -17,14 +17,14 @@
     CLR.L   D1 ;CLR.L	D1
 
     * AND
-    AND.B   D1,D2 ;AND.B	D1,D2
-    AND.W   D1,D2 ;AND.W	D1,D2
-    AND.L   D1,D2 ;AND.L	D1,D2
+    AND.B   A1,D2 ;AND.B	D1,D2
+    AND.W   A1,D2 ;AND.W	D1,D2
+    AND.L   A1,D2 ;AND.L	D1,D2
     
     * OR
-    OR.B    D1,D2 ;OR.B	D1,D2
-    OR.W    D1,D2 ;OR.W	D1,D2
-    OR.L    D1,D2 ;OR.L	D1,D2
+    OR.B    A1,D2 ;OR.B	D1,D2
+    OR.W    A1,D2 ;OR.W	D1,D2
+    OR.L    A1,D2 ;OR.L	D1,D2
     
     * ADD commands
     ;ADD.B  #$12,D0
@@ -74,9 +74,9 @@
     ADDA.W    A1,A2 ;
     ADDA.L    A2,A2 ;
     
-    * MOVEM commands (this may be the hardest to decode)
-    ;MOVEM.W   D0-D7/A1-A4,EXIT    ;loads all the listed registers to memory at exit 
-    ;MOVEM.W   EXIT,D0-D7/A1-A4   ;loads all the listed registers to memory at exit 
+   * MOVEM commands (this may be the hardest to decode)
+    MOVEM.W   D0-D7/A1-A4,EXIT    ;loads all the listed registers to memory at exit 
+    MOVEM.W   EXIT,D0-D7/A1-A6   ;loads all the listed registers to memory at exit 
     
     * MOVEQ commands
     MOVEQ   #$12,D3
@@ -99,6 +99,7 @@
     LSR.B    D2,D1
     LSR.W    D2,D1
     LSR.L    D2,D1
+    LSR.B    #2,D1
     
     * ASL
     ASL.B   D2,D1
@@ -163,32 +164,3 @@ subroutine:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
