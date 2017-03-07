@@ -8,7 +8,7 @@
 START: 
                   ; first instruction of program
     BRA     MAIN
-    INCLUDE 'testProgram.X68' ; run the testProgram Subroutine
+    INCLUDE 'test.X68' ; run the testProgram Subroutine
    
 
     ORG     $1000 ; this is where the rest of the code will be loaded into memory
@@ -402,7 +402,7 @@ printLSL:
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
+            BRA     PRINTROTATIONEA
 
 
 printLSR:
@@ -415,7 +415,7 @@ printLSR:
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
+            BRA     PRINTROTATIONEA
 
 printASL:
             LEA     ASLmsg,A1
@@ -427,7 +427,7 @@ printASL:
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
+            BRA     PRINTROTATIONEA
 
 printASR:
             LEA     ASRmsg,A1
@@ -439,7 +439,7 @@ printASR:
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
+            BRA     PRINTROTATIONEA
 
 printROL:
             LEA     ROLmsg,A1
@@ -451,7 +451,7 @@ printROL:
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
+            BRA     PRINTROTATIONEA
             
 printROR:
             LEA     RORmsg,A1
@@ -464,7 +464,7 @@ printROR:
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
+            BRA     PRINTROTATIONEA
             
 printADD:
             LEA     ADDmsg,A1
@@ -647,8 +647,13 @@ printBcc:
             JSR     BIN2A_CONVERT
             
             LEA     BIN2A_BUFFER,A1
-            MOVE.B  #13,D0
+            MOVE.B  #14,D0
             TRAP    #15
+         
+            LEA     NEWLINE,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+
          
             BRA     LOOP
 printJsr:
@@ -781,84 +786,124 @@ printHI:
             LEA     HImsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+            
+*            LEA     NEWLINE,A1
+*            MOVE.B  #14,D0
+*            TRAP    #15
+*            
             RTS
 
 printLS:
             LEA     LSmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+                       
             RTS
             
 printCC:
             LEA     CCmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+           
+
             RTS
             
 printCS:
             LEA     CSmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+
+
+            
             RTS
 
 printNE:
             LEA     NEmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+        
+
+            
             RTS
 
 printEQ:
             LEA     EQmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+            
+
+
             RTS
 
 printVC:
             LEA     VCmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+
+
             RTS
 
 printVS:
             LEA     VSmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+            
+
+
             RTS
             
 printPL:
             LEA     PLmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+            
+
+            
             RTS
             
 printMI:
             LEA     MImsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+            
+
+            
             RTS
             
 printGE:
             LEA     GEmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+            
+
+            
             RTS
             
 printLT:
             LEA     LTmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+            
+
+            
             RTS
             
 printGT:
             LEA     GTmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+            
+
+            
             RTS
     
 printLE:
             LEA     LEmsg,A1
             MOVE.B  #14,D0
             TRAP    #15
+            
+
+            
             RTS        
 
     INCLUDE     'EAstuff.X68'             
@@ -875,7 +920,7 @@ wronglength     DC.B    'Input was not 8 digits, try again.',CR,LF,'(TIP: add le
 overlapMsg      DC.B    'This overlaps with the disassembler, try again.',CR,LF,0
 
 Lmsg            DC.B    'L',HT,0
-Wmsg            DC.B    'W',HT,0
+
 Bmsg            DC.B    'B',HT,0
 
 UnknownSizemsg  DC.B    'UNKOWNSIZE',CR,LF,0
@@ -906,7 +951,7 @@ Bccmsg          DC.B    HT,'B',0
 JSRmsg          DC.B    HT,'JSR',HT,0
 RTSmsg          DC.B    HT,'RTS',CR,LF,0
 NOPmsg          DC.B    HT,'NOP',0
-
+Wmsg            DC.B    'W',HT,0
 HImsg           DC.B    'HI',HT,0
 LSmsg           DC.B    'LS',HT,0
 CCmsg           DC.B    'CC',HT,0
@@ -922,7 +967,7 @@ LTmsg           DC.B    'LT',HT,0
 GTmsg           DC.B    'GT',HT,0
 LEmsg           DC.B    'LE',HT,0
     
-inputSpace  DS.L    0            ; don't put any variables after this. or anything at all. IT'S IMPORTANT THAT THIS IS THE END, OK!?!?!?
+inputSpace  DS.L    64            ; don't put any variables after this. or anything at all. IT'S IMPORTANT THAT THIS IS THE END, OK!?!?!?
 
 EXIT:
     END    START        ; last line of source
@@ -935,22 +980,3 @@ EXIT:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
