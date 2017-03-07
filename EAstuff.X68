@@ -88,10 +88,7 @@ EADECMODE: *--------------Loop to compare all EAModes-----------------
        CMP    #%111, D1
        BEQ    EAMODE111
 
-       ADD.L   #$1, D4    ; increment counter
-       CMPI.L  #$7, D4    ; break loop here 
-       BEQ     EAERROR    
-       BRA     EADECMODE
+       BRA     EAERROR
 
 
 EAMODE000: *-------------------- Data register direct -------------------------------
@@ -422,13 +419,18 @@ EAERROR:
 *-----------------------------SPECIAL SNOWFLAKES-------------------------------*
 
 *-----------------------------MOVEM SUBROUTINES-------------------------------*
-MOVEMSET            DS.B 0 ; 0 if set bits, else 1
+
 DECODEMOVEMEA:
-       MOVE.B  #0,MOVEMSET
+
+        ;MOVEM.L D0-D7/A1/A3-A6,-(A7)
+        
+MOVEMSET            DS.B 0 ; 0 if set bits, else 1
+       LEA      MOVEMSET,A5
+       MOVE.B   #0,(A5)
        ;MOVE.B  #0,MOVEMMEMCOUNT
        ;MOVE.B  #0,MOVEMCOUNT
        ;MOVE.B  #0,MOVEMDIRECTION      
-       MOVEM.L D0-D7/A1/A3-A6,-(A7)
+       
        MOVE.W   (A2)+,D3     ; opcode
        ANDI.W   #$0400, D3
        CMPI.W   #$0, D3
@@ -442,8 +444,8 @@ MOVEMEAMEM:
        ;CMPI.W   #$1, MOVEMMEMCOUNT 
        ;BEQ      MOVEMEXIT
        ;MOVE.B    #1,MOVEMMEMCOUNT
-       MOVEA.W  A2, A3
-       ADDA.W   #4, A3
+       MOVEA.W  A2, A4
+       ADDA.W   #4, A4
        MOVE.L   #32,BIN2A_COUNT
        MOVE.W   (A3),D7
        MOVE.L   D7,BIN2A_VAL
@@ -567,8 +569,8 @@ MOVEMEXIT:
       TRAP    #15
       
       ADDA.L  #4,A2
-      BRA     EAEXIT
-*-----------------------------END MOVEA SUBROUTINES-------------------------------*
+      BRA     LOOP
+*-----------------------------END MOVEM SUBROUTINES-------------------------------*
       
 MOVEEA: 
       MOVE.W    (A2),D6
@@ -708,6 +710,61 @@ PRINTADDILONG:
 
       BRA     EAEXIT     
 
+PRINTROTATIONEA:
+      MOVEM.L D0-D7/A1/A3-A6,-(A7)
+      MOVE.W  (A2),D2
+      ANDI.W  #$0020,D2
+      CMPI.W  #0,D2
+      BEQ     PRINTROTPOUND
+      LEA     DATA_REG,A1
+      MOVE.B  #14,D0
+      TRAP    #15
+      
+CONTROTEA:
+      MOVE.W   (A2),D2
+      ANDI.W   #$0E00,D2
+      LSR.W    #8,D2
+      LSR.W    #1,D2
+      
+      MOVE.L   D2, BIN2A_VAL   ; put register value in conversion subroutine
+      MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
+      JSR      BIN2A_CONVERT
+
+      LEA      BIN2A_BUFFER, A1
+      MOVE.B   #14,D0
+      TRAP     #15
+      
+      LEA      COMMA,A1
+      MOVE.B   #14,D0
+      TRAP     #15
+      
+      LEA     DATA_REG,A1
+      MOVE.B  #14,D0
+      TRAP    #15
+
+      MOVE.W  (A2),D2
+      ANDI.W  #$0005,D2
+
+   ;   ADDI.W  #1, D2
+
+      MOVE.L   D2, BIN2A_VAL   ; put register value in conversion subroutine
+      MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
+      JSR      BIN2A_CONVERT
+
+      LEA      BIN2A_BUFFER, A1
+      MOVE.B   #14,D0
+      TRAP     #15
+
+      BRA      EAEXIT
+
+PRINTROTPOUND:
+      LEA    POUND,A1
+      MOVE.B #14,D0
+      TRAP   #15
+      
+      BRA CONTROTEA
+
+
 
 EAEXIT: ; SET ERROR FLAG TODO
         MOVEM.L (A7)+,D0-D7/A1/A3-A6 ; put everything back on the stack
@@ -719,9 +776,9 @@ EAEXIT: ; SET ERROR FLAG TODO
         BRA     LOOP                  ; return to sender
 
 *---------------BINARY TO ASCII CONVERSION -------------------------------
-BIN2A_VAL    DS.L 1  ; input number for our conversion
-BIN2A_BUFFER DS.B 16 ; buffer for ascii data
-BIN2A_COUNT  DS.L 1  ; number of bits to convert (must be div by 4)
+BIN2A_VAL    DS.L 32  ; input number for our conversion
+BIN2A_BUFFER DS.B 256 ; buffer for ascii data
+BIN2A_COUNT  DS.L 32  ; number of bits to convert (must be div by 4)
 
 BIN2A_CONVERT: 
         MOVEM.L  D0-D7/A0-A6, -(A7)     
@@ -791,7 +848,4 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
 
 
 
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
+
