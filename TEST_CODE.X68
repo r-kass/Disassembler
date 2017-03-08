@@ -1,418 +1,418 @@
 *-----------------------------------------------------------
 * Title      :
-* Written by :
-* Date       :
-* Description:
-*-----------------------------------------------------------
-   ; ORG    $6000
-;START:                  ; first instruction of program
-
-    BRA         INPUT
-
+** Written by :
+** Date       :
+** Description:
+**-----------------------------------------------------------
+*   ; ORG    $6000
+*;START:                  ; first instruction of program
+*
+*    BRA         INPUT
+*
 *Start of Move test code.***************************************************
 ****************************************************************************
 *Done
-    MOVE.L  #$123,D5
-    MOVE.L  D1,D2
-    MOVE.L  A5,D4
-    MOVE.L  (A4),D3
-    MOVE.L  (A7)+,D3
-    MOVE.L  -(A0),D7
-    MOVE.L  $0,D3
-    MOVE.L  $FFF,D1
-    MOVE.L  $8000,D2
-    MOVE.L  $20000,D3
-    
-    MOVE.L  #$123,(A4)
-    MOVE.L  D1,(A4)
-    MOVE.L  A5,(A4)
-    MOVE.L  (A4),(A4)
-    MOVE.L  (A7)+,(A4)
-    MOVE.L  -(A0),(A4)
-    MOVE.L  $0,(A4)
-    MOVE.L  $FFF,(A4)
-    MOVE.L  $8000,(A4)
-    MOVE.L  $20000,(A4)
-    
-    MOVE.L  #$123,(A4)+
-    MOVE.L  D1,(A4)+
-    MOVE.L  A5,(A4)+
-    MOVE.L  (A4),(A4)+
-    MOVE.L  (A7)+,(A4)+
-    MOVE.L  -(A0),(A4)+
-    MOVE.L  $0,(A4)+
-    MOVE.L  $FFF,(A4)+
-    MOVE.L  $8000,(A4)+
-    MOVE.L  $20000,(A4)+
-    
-    MOVE.L  #$123,-(A4)
-    MOVE.L  D1,-(A4)
-    MOVE.L  A5,-(A4)
-    MOVE.L  (A4),-(A4)
-    MOVE.L  (A7)+,-(A4)
-    MOVE.L  -(A0),-(A4)
-    MOVE.L  $0,-(A4)
-    MOVE.L  $FFF,-(A4)
-    MOVE.L  $8000,-(A4)
-    MOVE.L  $20000,-(A4)
-    
-    MOVE.L  #$123,$0
-    MOVE.L  D1,$0
-    MOVE.L  A5,$0
-    MOVE.L  (A4),$0
-    MOVE.L  (A7)+,$0
-    MOVE.L  -(A0),$0
-    MOVE.L  $0,$0
-    MOVE.L  $FFF,$0
-    MOVE.L  $8000,$0
-    MOVE.L  $20000,$0
-    
-    MOVE.L  #$123,$8000
-    MOVE.L  D1,$8000
-    MOVE.L  A5,$8000
-    MOVE.L  (A4),$8000
-    MOVE.L  (A7)+,$8000
-    MOVE.L  -(A0),$8000
-    MOVE.L  $0,$8000
-    MOVE.L  $FFF,$8000
-    MOVE.L  $8000,$8000
-    MOVE.L  $20000,$8000
-    
-    MOVE.L  #$123,$21000
-    MOVE.L  D1,$21000
-    MOVE.L  A5,$21000
-    MOVE.L  (A4),$21000
-    MOVE.L  (A7)+,$21000
-    MOVE.L  -(A0),$21000
-    MOVE.L  $0,$21000
-    MOVE.L  $FFF,$21000
-    MOVE.L  $8000,$21000
-    MOVE.L  $20000,$21000
-    
-    MOVE.W  #$123,D5
-    MOVE.W  D1,D2
-    MOVE.W  A5,D4
-    MOVE.W  (A4),D3
-    MOVE.W  (A7)+,D3
-    MOVE.W  -(A0),D7
-    MOVE.W  $0,D3
-    MOVE.W  $FFF,D1
-    MOVE.W  $8000,D2
-    MOVE.W  $20000,D3
-    
-    MOVE.W  #$123,(A4)
-    MOVE.W  D1,(A4)
-    MOVE.W  A5,(A4)
-    MOVE.W  (A4),(A4)
-    MOVE.W  (A7)+,(A4)
-    MOVE.W  -(A0),(A4)
-    MOVE.W  $0,(A4)
-    MOVE.W  $FFF,(A4)
-    MOVE.W  $8000,(A4)
-    MOVE.W  $20000,(A4)
-    
-    MOVE.W  #$123,(A4)+
-    MOVE.W  D1,(A4)+
-    MOVE.W  A5,(A4)+
-    MOVE.W  (A4),(A4)+
-    MOVE.W  (A7)+,(A4)+
-    MOVE.W  -(A0),(A4)+
-    MOVE.W  $0,(A4)+
-    MOVE.W  $FFF,(A4)+
-    MOVE.W  $8000,(A4)+
-    MOVE.W  $20000,(A4)+
-    
-    MOVE.W  #$123,-(A4)
-    MOVE.W  D1,-(A4)
-    MOVE.W  A5,-(A4)
-    MOVE.W  (A4),-(A4)
-    MOVE.W  (A7)+,-(A4)
-    MOVE.W  -(A0),-(A4)
-    MOVE.W  $0,-(A4)
-    MOVE.W  $FFF,-(A4)
-    MOVE.W  $8000,-(A4)
-    MOVE.W  $20000,-(A4)
-    
-    MOVE.W  #$123,$0
-    MOVE.W  D1,$0
-    MOVE.W  A5,$0
-    MOVE.W  (A4),$0
-    MOVE.W  (A7)+,$0
-    MOVE.W  -(A0),$0
-    MOVE.W  $0,$0
-    MOVE.W  $FFF,$0
-    MOVE.W  $8000,$0
-    MOVE.W  $20000,$0
-    
-    MOVE.W  #$123,$8000
-    MOVE.W  D1,$8000
-    MOVE.W  A5,$8000
-    MOVE.W  (A4),$8000
-    MOVE.W  (A7)+,$8000
-    MOVE.W  -(A0),$8000
-    MOVE.W  $0,$8000
-    MOVE.W  $FFF,$8000
-    MOVE.W  $8000,$8000
-    MOVE.W  $20000,$8000
-    
-    MOVE.W  #$123,$21000
-    MOVE.W  D1,$21000
-    MOVE.W  A5,$21000
-    MOVE.W  (A4),$21000
-    MOVE.W  (A7)+,$21000
-    MOVE.W  -(A0),$21000
-    MOVE.W  $0,$21000
-    MOVE.W  $FFF,$21000
-    MOVE.W  $8000,$21000
-    MOVE.W  $20000,$21000
-    
-    MOVE.B  #$13,D5
-    MOVE.B  D1,D2
-
-    MOVE.B  (A4),D3
-    MOVE.B  (A7)+,D3
-    MOVE.B  -(A0),D7
-    MOVE.B  $0,D3
-    MOVE.B  $FFF,D1
-    MOVE.B  $8000,D2
-    MOVE.B  $20000,D3
-    
-    MOVE.B  #$13,(A4)
-    MOVE.B  D1,(A4)
-    
-    MOVE.B  (A4),(A4)
-    MOVE.B  (A7)+,(A4)
-    MOVE.B  -(A0),(A4)
-    MOVE.B  $0,(A4)
-    MOVE.B  $FFF,(A4)
-    MOVE.B  $8000,(A4)
-    MOVE.B  $20000,(A4)
-    
-    MOVE.B  #$13,(A4)+
-    MOVE.B  D1,(A4)+
-
-    MOVE.B  (A4),(A4)+
-    MOVE.B  (A7)+,(A4)+
-    MOVE.B  -(A0),(A4)+
-    MOVE.B  $0,(A4)+
-    MOVE.B  $FFF,(A4)+
-    MOVE.B  $8000,(A4)+
-    MOVE.B  $20000,(A4)+
-    
-    MOVE.B  #$13,-(A4)
-    MOVE.B  D1,-(A4)
-
-    MOVE.B  (A4),-(A4)
-    MOVE.B  (A7)+,-(A4)
-    MOVE.B  -(A0),-(A4)
-    MOVE.B  $0,-(A4)
-    MOVE.B  $FFF,-(A4)
-    MOVE.B  $8000,-(A4)
-    MOVE.B  $20000,-(A4)
-   
-    MOVE.B  #$13,$0
-    MOVE.B  D1,$0
-
-    MOVE.B  (A4),$0
-    MOVE.B  (A7)+,$0
-    MOVE.B  -(A0),$0
-    MOVE.B  $0,$0
-    MOVE.B  $FFF,$0
-    MOVE.B  $8000,$0
-    MOVE.B  $20000,$0
-    
-    MOVE.B  #$0,$8000
-    MOVE.B  D1,$8000
-
-    MOVE.B  (A4),$8000
-    MOVE.B  (A7)+,$8000
-    MOVE.B  -(A0),$8000
-    MOVE.B  $0,$8000
-    MOVE.B  $FFF,$8000
-    MOVE.B  $8000,$8000
-    MOVE.B  $20000,$8000
-    
-    MOVE.B  #$FF,$21000
-    MOVE.B  D1,$21000
-
-    MOVE.B  (A4),$21000
-    MOVE.B  (A7)+,$21000
-    MOVE.B  -(A0),$21000
-    MOVE.B  $0,$21000
-    MOVE.B  $FFF,$21000
-    MOVE.B  $8000,$21000
-    MOVE.B  $20000,$21000
-    
+*    MOVE.L  #$123,D5
+*    MOVE.L  D1,D2
+*    MOVE.L  A5,D4
+*    MOVE.L  (A4),D3
+*    MOVE.L  (A7)+,D3
+*    MOVE.L  -(A0),D7
+*    MOVE.L  $0,D3
+*    MOVE.L  $FFF,D1
+*    MOVE.L  $8000,D2
+*    MOVE.L  $20000,D3
+*    
+*    MOVE.L  #$123,(A4)
+*    MOVE.L  D1,(A4)
+*    MOVE.L  A5,(A4)
+*    MOVE.L  (A4),(A4)
+*    MOVE.L  (A7)+,(A4)
+*    MOVE.L  -(A0),(A4)
+*    MOVE.L  $0,(A4)
+*    MOVE.L  $FFF,(A4)
+*    MOVE.L  $8000,(A4)
+*    MOVE.L  $20000,(A4)
+*    
+*    MOVE.L  #$123,(A4)+
+*    MOVE.L  D1,(A4)+
+*    MOVE.L  A5,(A4)+
+*    MOVE.L  (A4),(A4)+
+*    MOVE.L  (A7)+,(A4)+
+*    MOVE.L  -(A0),(A4)+
+*    MOVE.L  $0,(A4)+
+*    MOVE.L  $FFF,(A4)+
+*    MOVE.L  $8000,(A4)+
+*    MOVE.L  $20000,(A4)+
+*    
+*    MOVE.L  #$123,-(A4)
+*    MOVE.L  D1,-(A4)
+*    MOVE.L  A5,-(A4)
+*    MOVE.L  (A4),-(A4)
+*    MOVE.L  (A7)+,-(A4)
+*    MOVE.L  -(A0),-(A4)
+*    MOVE.L  $0,-(A4)
+*    MOVE.L  $FFF,-(A4)
+*    MOVE.L  $8000,-(A4)
+*    MOVE.L  $20000,-(A4)
+*    
+*    MOVE.L  #$123,$0
+*    MOVE.L  D1,$0
+*    MOVE.L  A5,$0
+*    MOVE.L  (A4),$0
+*    MOVE.L  (A7)+,$0
+*    MOVE.L  -(A0),$0
+*    MOVE.L  $0,$0
+*    MOVE.L  $FFF,$0
+*    MOVE.L  $8000,$0
+*    MOVE.L  $20000,$0
+*    
+*    MOVE.L  #$123,$8000
+*    MOVE.L  D1,$8000
+*    MOVE.L  A5,$8000
+*    MOVE.L  (A4),$8000
+*    MOVE.L  (A7)+,$8000
+*    MOVE.L  -(A0),$8000
+*    MOVE.L  $0,$8000
+*    MOVE.L  $FFF,$8000
+*    MOVE.L  $8000,$8000
+*    MOVE.L  $20000,$8000
+*    
+*    MOVE.L  #$123,$21000
+*    MOVE.L  D1,$21000
+*    MOVE.L  A5,$21000
+*    MOVE.L  (A4),$21000
+*    MOVE.L  (A7)+,$21000
+*    MOVE.L  -(A0),$21000
+*    MOVE.L  $0,$21000
+*    MOVE.L  $FFF,$21000
+*    MOVE.L  $8000,$21000
+*    MOVE.L  $20000,$21000
+*    
+*    MOVE.W  #$123,D5
+*    MOVE.W  D1,D2
+*    MOVE.W  A5,D4
+*    MOVE.W  (A4),D3
+*    MOVE.W  (A7)+,D3
+*    MOVE.W  -(A0),D7
+*    MOVE.W  $0,D3
+*    MOVE.W  $FFF,D1
+*    MOVE.W  $8000,D2
+*    MOVE.W  $20000,D3
+*    
+*    MOVE.W  #$123,(A4)
+*    MOVE.W  D1,(A4)
+*    MOVE.W  A5,(A4)
+*    MOVE.W  (A4),(A4)
+*    MOVE.W  (A7)+,(A4)
+*    MOVE.W  -(A0),(A4)
+*    MOVE.W  $0,(A4)
+*    MOVE.W  $FFF,(A4)
+*    MOVE.W  $8000,(A4)
+*    MOVE.W  $20000,(A4)
+*    
+*    MOVE.W  #$123,(A4)+
+*    MOVE.W  D1,(A4)+
+*    MOVE.W  A5,(A4)+
+*    MOVE.W  (A4),(A4)+
+*    MOVE.W  (A7)+,(A4)+
+*    MOVE.W  -(A0),(A4)+
+*    MOVE.W  $0,(A4)+
+*    MOVE.W  $FFF,(A4)+
+*    MOVE.W  $8000,(A4)+
+*    MOVE.W  $20000,(A4)+
+*    
+*    MOVE.W  #$123,-(A4)
+*    MOVE.W  D1,-(A4)
+*    MOVE.W  A5,-(A4)
+*    MOVE.W  (A4),-(A4)
+*    MOVE.W  (A7)+,-(A4)
+*    MOVE.W  -(A0),-(A4)
+*    MOVE.W  $0,-(A4)
+*    MOVE.W  $FFF,-(A4)
+*    MOVE.W  $8000,-(A4)
+*    MOVE.W  $20000,-(A4)
+*    
+*    MOVE.W  #$123,$0
+*    MOVE.W  D1,$0
+*    MOVE.W  A5,$0
+*    MOVE.W  (A4),$0
+*    MOVE.W  (A7)+,$0
+*    MOVE.W  -(A0),$0
+*    MOVE.W  $0,$0
+*    MOVE.W  $FFF,$0
+*    MOVE.W  $8000,$0
+*    MOVE.W  $20000,$0
+*    
+*    MOVE.W  #$123,$8000
+*    MOVE.W  D1,$8000
+*    MOVE.W  A5,$8000
+*    MOVE.W  (A4),$8000
+*    MOVE.W  (A7)+,$8000
+*    MOVE.W  -(A0),$8000
+*    MOVE.W  $0,$8000
+*    MOVE.W  $FFF,$8000
+*    MOVE.W  $8000,$8000
+*    MOVE.W  $20000,$8000
+*    
+*    MOVE.W  #$123,$21000
+*    MOVE.W  D1,$21000
+*    MOVE.W  A5,$21000
+*    MOVE.W  (A4),$21000
+*    MOVE.W  (A7)+,$21000
+*    MOVE.W  -(A0),$21000
+*    MOVE.W  $0,$21000
+*    MOVE.W  $FFF,$21000
+*    MOVE.W  $8000,$21000
+*    MOVE.W  $20000,$21000
+*    
+*    MOVE.B  #$13,D5
+*    MOVE.B  D1,D2
+*
+*    MOVE.B  (A4),D3
+*    MOVE.B  (A7)+,D3
+*    MOVE.B  -(A0),D7
+*    MOVE.B  $0,D3
+*    MOVE.B  $FFF,D1
+*    MOVE.B  $8000,D2
+*    MOVE.B  $20000,D3
+*    
+*    MOVE.B  #$13,(A4)
+*    MOVE.B  D1,(A4)
+*    
+*    MOVE.B  (A4),(A4)
+*    MOVE.B  (A7)+,(A4)
+*    MOVE.B  -(A0),(A4)
+*    MOVE.B  $0,(A4)
+*    MOVE.B  $FFF,(A4)
+*    MOVE.B  $8000,(A4)
+*    MOVE.B  $20000,(A4)
+*    
+*    MOVE.B  #$13,(A4)+
+*    MOVE.B  D1,(A4)+
+*
+*    MOVE.B  (A4),(A4)+
+*    MOVE.B  (A7)+,(A4)+
+*    MOVE.B  -(A0),(A4)+
+*    MOVE.B  $0,(A4)+
+*    MOVE.B  $FFF,(A4)+
+*    MOVE.B  $8000,(A4)+
+*    MOVE.B  $20000,(A4)+
+*    
+*    MOVE.B  #$13,-(A4)
+*    MOVE.B  D1,-(A4)
+*
+*    MOVE.B  (A4),-(A4)
+*    MOVE.B  (A7)+,-(A4)
+*    MOVE.B  -(A0),-(A4)
+*    MOVE.B  $0,-(A4)
+*    MOVE.B  $FFF,-(A4)
+*    MOVE.B  $8000,-(A4)
+*    MOVE.B  $20000,-(A4)
+*   
+*    MOVE.B  #$13,$0
+*    MOVE.B  D1,$0
+*
+*    MOVE.B  (A4),$0
+*    MOVE.B  (A7)+,$0
+*    MOVE.B  -(A0),$0
+*    MOVE.B  $0,$0
+*    MOVE.B  $FFF,$0
+*    MOVE.B  $8000,$0
+*    MOVE.B  $20000,$0
+*    
+*    MOVE.B  #$0,$8000
+*    MOVE.B  D1,$8000
+*
+*    MOVE.B  (A4),$8000
+*    MOVE.B  (A7)+,$8000
+*    MOVE.B  -(A0),$8000
+*    MOVE.B  $0,$8000
+*    MOVE.B  $FFF,$8000
+*    MOVE.B  $8000,$8000
+*    MOVE.B  $20000,$8000
+*    
+*    MOVE.B  #$FF,$21000
+*    MOVE.B  D1,$21000
+*
+*    MOVE.B  (A4),$21000
+*    MOVE.B  (A7)+,$21000
+*    MOVE.B  -(A0),$21000
+*    MOVE.B  $0,$21000
+*    MOVE.B  $FFF,$21000
+*    MOVE.B  $8000,$21000
+*    MOVE.B  $20000,$21000
+*    
 *End of Move test code. *****************************************************
 *****************************************************************************
 
 *Start of MOVEA test code.***************************************************
 *****************************************************************************
 *Done.
-    MOVEA.W   D2,A2
-    MOVEA.W   A5,A3
-    MOVEA.W   (A4)+,A3
-    MOVEA.W   -(A2),A5
-    MOVEA.W   $0,A3
-    MOVEA.W   $1234,A3
-    MOVEA.W   $8000,A3
-    MOVEA.W   $FFFFFF,A7
-    MOVEA.W   #$0,A3
-    MOVEA.W   #$1000,A3
-    MOVEA.W   #$8000,A6
-    
-    MOVEA.L   D2,A2
-    MOVEA.L   A5,A3
-    MOVEA.L   (A4)+,A3
-    MOVEA.L   -(A2),A5
-    MOVEA.L   $0,A3
-    MOVEA.L   $1234,A3
-    MOVEA.L   $8000,A3
-    MOVEA.L   $FFFFFF,A7
-    MOVEA.L   #$0,A3
-    MOVEA.L   #$1000,A3
-    MOVEA.L   #$8000,A6
-    MOVEA.L   #$FFFF8000,A6
+*    MOVEA.W   D2,A2
+*    MOVEA.W   A5,A3
+*    MOVEA.W   (A4)+,A3
+*    MOVEA.W   -(A2),A5
+*    MOVEA.W   $0,A3
+*    MOVEA.W   $1234,A3
+*    MOVEA.W   $8000,A3
+*    MOVEA.W   $FFFFFF,A7
+*    MOVEA.W   #$0,A3
+*    MOVEA.W   #$1000,A3
+*    MOVEA.W   #$8000,A6
+*    
+*    MOVEA.L   D2,A2
+*    MOVEA.L   A5,A3
+*    MOVEA.L   (A4)+,A3
+*    MOVEA.L   -(A2),A5
+*    MOVEA.L   $0,A3
+*    MOVEA.L   $1234,A3
+*    MOVEA.L   $8000,A3
+*    MOVEA.L   $FFFFFF,A7
+*    MOVEA.L   #$0,A3
+*    MOVEA.L   #$1000,A3
+*    MOVEA.L   #$8000,A6
+*    MOVEA.L   #$FFFF8000,A6
 *End of MOVEA test code.****************************************************
 ****************************************************************************
 
 *Start of ADDI test code.*****************************************************************************
 ******************************************************************************************************
 *Done
-    ADDI.L   #4,D1   *Assembler changes this to ADDQ unless the number being added is greater than #8.
-    ADDI.L   #9,D1
-    ADDI.L   #0,D1
-    ADDI.L   #$FFFFFFFF,D7
-    ADDI.W   #$FFFF,D5
-    ADDI.W   #$0,D5
-    ADDI.W   #$9,D4
-    ADDI.B   #$FF,D3
-    ADDI.B   #$9,D3
-    ADDI.B   #$0,D3
-    
-    ADDI.L   #4,(A1)
-    ADDI.L   #9,(A1)
-    ADDI.L   #0,(A1)
-    ADDI.L   #$FFFFFFFF,(A1)
-    ADDI.W   #$FFFF,(A1)
-    ADDI.W   #$0,(A1)
-    ADDI.W   #$9,(A1)
-    ADDI.B   #$FF,(A1)
-    ADDI.B   #$9,(A1)
-    ADDI.B   #$0,(A1)
-    
-    ADDI.L   #4,(A1)+
-    ADDI.L   #9,(A1)+
-    ADDI.L   #0,(A1)+
-    ADDI.L   #$FFFFFFFF,(A1)+
-    ADDI.W   #$FFFF,(A1)+
-    ADDI.W   #$0,(A1)+
-    ADDI.W   #$9,(A1)+
-    ADDI.B   #$FF,(A1)+
-    ADDI.B   #$9,(A1)+
-    ADDI.B   #$0,(A1)+
-    
-    ADDI.L   #4,-(A1)
-    ADDI.L   #9,-(A1)
-    ADDI.L   #0,-(A1)
-    ADDI.L   #$FFFFFFFF,-(A1)
-    ADDI.W   #$FFFF,-(A1)
-    ADDI.W   #$0,-(A1)
-    ADDI.W   #$9,-(A1)
-    ADDI.B   #$FF,-(A1)
-    ADDI.B   #$9,-(A1)
-    ADDI.B   #$0,-(A1)
-    
-    ADDI.L   #4,$20
-    ADDI.L   #9,$20000
-    ADDI.L   #0,$8000
-    ADDI.L   #$FFFFFFFF,$20
-    ADDI.W   #$FFFF,$20
-    ADDI.W   #$0,$20000
-    ADDI.W   #$9,$8000
-    ADDI.B   #$FF,$8000
-    ADDI.B   #$9,$20000
-    ADDI.B   #$0,$20
+*    ADDI.L   #4,D1   *Assembler changes this to ADDQ unless the number being added is greater than #8.
+*    ADDI.L   #9,D1
+*    ADDI.L   #0,D1
+*    ADDI.L   #$FFFFFFFF,D7
+*    ADDI.W   #$FFFF,D5
+*    ADDI.W   #$0,D5
+*    ADDI.W   #$9,D4
+*    ADDI.B   #$FF,D3
+*    ADDI.B   #$9,D3
+*    ADDI.B   #$0,D3
+*    
+*    ADDI.L   #4,(A1)
+*    ADDI.L   #9,(A1)
+*    ADDI.L   #0,(A1)
+*    ADDI.L   #$FFFFFFFF,(A1)
+*    ADDI.W   #$FFFF,(A1)
+*    ADDI.W   #$0,(A1)
+*    ADDI.W   #$9,(A1)
+*    ADDI.B   #$FF,(A1)
+*    ADDI.B   #$9,(A1)
+*    ADDI.B   #$0,(A1)
+*    
+*    ADDI.L   #4,(A1)+
+*    ADDI.L   #9,(A1)+
+*    ADDI.L   #0,(A1)+
+*    ADDI.L   #$FFFFFFFF,(A1)+
+*    ADDI.W   #$FFFF,(A1)+
+*    ADDI.W   #$0,(A1)+
+*    ADDI.W   #$9,(A1)+
+*    ADDI.B   #$FF,(A1)+
+*    ADDI.B   #$9,(A1)+
+*    ADDI.B   #$0,(A1)+
+*    
+*    ADDI.L   #4,-(A1)
+*    ADDI.L   #9,-(A1)
+*    ADDI.L   #0,-(A1)
+*    ADDI.L   #$FFFFFFFF,-(A1)
+*    ADDI.W   #$FFFF,-(A1)
+*    ADDI.W   #$0,-(A1)
+*    ADDI.W   #$9,-(A1)
+*    ADDI.B   #$FF,-(A1)
+*    ADDI.B   #$9,-(A1)
+*    ADDI.B   #$0,-(A1)
+*    
+*    ADDI.L   #4,$20
+*    ADDI.L   #9,$20000
+*    ADDI.L   #0,$8000
+*    ADDI.L   #$FFFFFFFF,$20
+*    ADDI.W   #$FFFF,$20
+*    ADDI.W   #$0,$20000
+*    ADDI.W   #$9,$8000
+*    ADDI.B   #$FF,$8000
+*    ADDI.B   #$9,$20000
+*    ADDI.B   #$0,$20
 *End of ADDI test code.*****************************************************
 ****************************************************************************
 
 *Start of BTST test code.***************************************************
 ****************************************************************************
 *Done.  
-    BTST     #0,D1
-    BTST     #1,(A6)
-    BTST     #2,(A6)+
-    BTST     #3,-(A6)
-    BTST     #30,$0
-    BTST     #29,$1000
-    BTST     #30,$8000
-    BTST     #31,$FFFF0000
-    
-    BTST     D0,D1
-    BTST     D1,(A6)
-    BTST     D2,(A6)+
-    BTST     D3,-(A6)
-    BTST     D5,$0
-    BTST     D6,$1000
-    BTST     D7,$8000
-    BTST     D0,$FFFF0000
+*    BTST     #0,D1
+*    BTST     #1,(A6)
+*    BTST     #2,(A6)+
+*    BTST     #3,-(A6)
+*    BTST     #30,$0
+*    BTST     #29,$1000
+*    BTST     #30,$8000
+*    BTST     #31,$FFFF0000
+*    
+*    BTST     D0,D1
+*    BTST     D1,(A6)
+*    BTST     D2,(A6)+
+*    BTST     D3,-(A6)
+*    BTST     D5,$0
+*    BTST     D6,$1000
+*    BTST     D7,$8000
+*    BTST     D0,$FFFF0000
 *End of BTST test code.*****************************************************
 ****************************************************************************
 
 *Start of NOP test code.****************************************************
 ****************************************************************************
 *Done
-    NOP
+*    NOP
 *End of NOP test code.******************************************************
 ****************************************************************************
 
 *Start of RTS test code.****************************************************
 ****************************************************************************
 *Done
-    RTS
+*    RTS
 *End of RTS test code.
 ****************************************************************************
 
 *Start of LEA test code.****************************************************
 ****************************************************************************
 *Done
-    LEA $0,A0
-    LEA $1000,A1
-    LEA $8000,A2
-    LEA $FFFF0000,A3
-    LEA (A4),A5  
+*    LEA $0,A0
+*    LEA $1000,A1
+*    LEA $8000,A2
+*    LEA $FFFF0000,A3
+*    LEA (A4),A5  
 *End of LEA test code.******************************************************
 ****************************************************************************
 
 *Start of CLR test code.****************************************************
 ****************************************************************************
 *Done
-    CLR.B   D0
-    CLR.B   (A2)
-    CLR.B   (A3)+
-    CLR.B   -(A4)
-    CLR.B   $0
-    CLR.B   $1000
-    CLR.B   $8000
-    CLR.B   $FFEF0000
-    
-    CLR.W   D0
-    CLR.W   (A2)
-    CLR.W   (A3)+
-    CLR.W   -(A4)
-    CLR.W   $0
-    CLR.W   $1000
-    CLR.W   $8000
-    CLR.W   $FFEF0000
-    
-    CLR.L   D0
-    CLR.L   (A2)
-    CLR.L   (A3)+
-    CLR.L   -(A4)
-    CLR.L   $0
-    CLR.L   $1000
-    CLR.L   $8000
-    CLR.L   $FFEF0000
+*    CLR.B   D0
+*    CLR.B   (A2)
+*    CLR.B   (A3)+
+*    CLR.B   -(A4)
+*    CLR.B   $0
+*    CLR.B   $1000
+*    CLR.B   $8000
+*    CLR.B   $FFEF0000
+*    
+*    CLR.W   D0
+*    CLR.W   (A2)
+*    CLR.W   (A3)+
+*    CLR.W   -(A4)
+*    CLR.W   $0
+*    CLR.W   $1000
+*    CLR.W   $8000
+*    CLR.W   $FFEF0000
+*    
+*    CLR.L   D0
+*    CLR.L   (A2)
+*    CLR.L   (A3)+
+*    CLR.L   -(A4)
+*    CLR.L   $0
+*    CLR.L   $1000
+*    CLR.L   $8000
+*    CLR.L   $FFEF0000
     
 *End of CLR test code.******************************************************
 ****************************************************************************
@@ -420,115 +420,115 @@
 *Start of JSR test code.****************************************************
 ****************************************************************************
 *Done
-    JSR     (A6)
-    JSR     $0
-    JSR     $1000
-    JSR     $8000
-    JSR     $FFEE0000
+*    JSR     (A6)
+*    JSR     $0
+*    JSR     $1000
+*    JSR     $8000
+*    JSR     $FFEE0000
 *End of JSR test code.******************************************************
 ****************************************************************************
 
 *Start of MOVEM test code.**************************************************
 ****************************************************************************
 *Done
-    MOVEM.W     (A7),D1-D7
-    MOVEM.L     (A6),D2-D7
-    MOVEM.W     (A7),A1-A7
-    MOVEM.L     (A6),A2-A7
-    MOVEM.W     (A5)+,D3-D7
-    MOVEM.L     (A4)+,D7-D7
-    MOVEM.W     (A5)+,A3-A7
-    MOVEM.L     (A4)+,A7-A7
-    MOVEM.W     $20000,D1-D7
-    MOVEM.L     $20000,D2-D7
-    MOVEM.W     $100,A1-A7
-    MOVEM.L     $100,A2-A7
-    
-    MOVEM.L     D1-D7,-(A3)
-    MOVEM.L     A1-A7,-(A2)
-    MOVEM.W     D3-D4,-(A1)
-    MOVEM.W     A1-A7,-(A0)
-    MOVEM.L     D1-D7,(A3)
-    MOVEM.L     A1-A7,(A2)
-    MOVEM.W     D3-D4,(A1)
-    MOVEM.W     A1-A7,(A0)
-    MOVEM.L     D1-D7,$20000
-    MOVEM.L     A1-A7,$100
-    MOVEM.W     D3-D4,$20000
-    MOVEM.W     A1-A7,$100
+*    MOVEM.W     (A7),D1-D7
+*    MOVEM.L     (A6),D2-D7
+*    MOVEM.W     (A7),A1-A7
+*    MOVEM.L     (A6),A2-A7
+*    MOVEM.W     (A5)+,D3-D7
+*    MOVEM.L     (A4)+,D7-D7
+*    MOVEM.W     (A5)+,A3-A7
+*    MOVEM.L     (A4)+,A7-A7
+*    MOVEM.W     $20000,D1-D7
+*    MOVEM.L     $20000,D2-D7
+*    MOVEM.W     $100,A1-A7
+*    MOVEM.L     $100,A2-A7
+*    
+*    MOVEM.L     D1-D7,-(A3)
+*    MOVEM.L     A1-A7,-(A2)
+*    MOVEM.W     D3-D4,-(A1)
+*    MOVEM.W     A1-A7,-(A0)
+*    MOVEM.L     D1-D7,(A3)
+*    MOVEM.L     A1-A7,(A2)
+*    MOVEM.W     D3-D4,(A1)
+*    MOVEM.W     A1-A7,(A0)
+*    MOVEM.L     D1-D7,$20000
+*    MOVEM.L     A1-A7,$100
+*    MOVEM.W     D3-D4,$20000
+*    MOVEM.W     A1-A7,$100
 *End of MOVEM test code.******************************************************
 ******************************************************************************
 
 *Start of ADDQ test code.*****************************************************
 ******************************************************************************
 *Done
-    ADDQ.B      #1,D0
-
-    ADDQ.B      #3,(A6)
-    ADDQ.B      #4,(A5)+
-    ADDQ.B      #5,-(A4)
-    ADDQ.B      #7,$0
-    ADDQ.B      #8,$1000
-    ADDQ.B      #8,$8000
-    ADDQ.B      #8,$FFFF0001
-    
-    ADDQ.W      #1,D0
-    ADDQ.W      #2,A7
-    ADDQ.W      #3,(A6)
-    ADDQ.W      #4,(A5)+
-    ADDQ.W      #5,-(A4)
-    ADDQ.W      #7,$0
-    ADDQ.W      #8,$1000
-    ADDQ.W      #8,$8000
-    ADDQ.W      #8,$FFFF0001
-    
-    ADDQ.L      #1,D0
-    ADDQ.L      #2,A7
-    ADDQ.L      #3,(A6)
-    ADDQ.L      #4,(A5)+
-    ADDQ.L      #5,-(A4)
-    ADDQ.L      #7,$0
-    ADDQ.L      #8,$1000
-    ADDQ.L      #8,$8000
-    ADDQ.L      #8,$FFFF0001
+*    ADDQ.B      #1,D0
+*
+*    ADDQ.B      #3,(A6)
+*    ADDQ.B      #4,(A5)+
+*    ADDQ.B      #5,-(A4)
+*    ADDQ.B      #7,$0
+*    ADDQ.B      #8,$1000
+*    ADDQ.B      #8,$8000
+*    ADDQ.B      #8,$FFFF0001
+*    
+*    ADDQ.W      #1,D0
+*    ADDQ.W      #2,A7
+*    ADDQ.W      #3,(A6)
+*    ADDQ.W      #4,(A5)+
+*    ADDQ.W      #5,-(A4)
+*    ADDQ.W      #7,$0
+*    ADDQ.W      #8,$1000
+*    ADDQ.W      #8,$8000
+*    ADDQ.W      #8,$FFFF0001
+*    
+*    ADDQ.L      #1,D0
+*    ADDQ.L      #2,A7
+*    ADDQ.L      #3,(A6)
+*    ADDQ.L      #4,(A5)+
+*    ADDQ.L      #5,-(A4)
+*    ADDQ.L      #7,$0
+*    ADDQ.L      #8,$1000
+*    ADDQ.L      #8,$8000
+*    ADDQ.L      #8,$FFFF0001
 *End of ADDQ test code.*******************************************************
 ******************************************************************************
 
 *Start of MOVEQ test code.****************************************************
 ******************************************************************************
 *Done
-    MOVEQ       #127,D1
-    MOVEQ       #0,D4
-    MOVEQ       #1,D7
-    MOVEQ       #-127,D2
-    MOVEQ       #-1,D2
-    MOVEQ       #7,D2
-    MOVEQ       #2,D5
-    MOVEQ       #5,D3
-    MOVEQ       #1,D1
-    MOVEQ       #5,D3
-    MOVEQ       #0,D6
-    MOVEQ       #3,D1
+*    MOVEQ       #127,D1
+*    MOVEQ       #0,D4
+*    MOVEQ       #1,D7
+*    MOVEQ       #-127,D2
+*    MOVEQ       #-1,D2
+*    MOVEQ       #7,D2
+*    MOVEQ       #2,D5
+*    MOVEQ       #5,D3
+*    MOVEQ       #1,D1
+*    MOVEQ       #5,D3
+*    MOVEQ       #0,D6
+*    MOVEQ       #3,D1
 *End of MOVEQ test code.******************************************************
 ******************************************************************************
 
 *Start of required BCC test code.*********************************************
 ******************************************************************************
 *Done
-    BCC         $6100
-    BCC         $20
-    BCC         $FF
-    BCC         $FFFFFF00
-    
-    BGT         $6100
-    BGT         $20
-    BGT         $FF
-    BGT         $FFFFFF00
-    
-    BLE         $6100
-    BLE         $20
-    BLE         $FF
-    BLE         $FFFFFF00
+*    BCC         $6100
+*    BCC         $20
+*    BCC         $FF
+*    BCC         $FFFFFF00
+*    
+*    BGT         $6100
+*    BGT         $20
+*    BGT         $FF
+*    BGT         $FFFFFF00
+*    
+*    BLE         $6100
+*    BLE         $20
+*    BLE         $FF
+*    BLE         $FFFFFF00
 
 *End of required BCC test code.***********************************************
 ******************************************************************************
@@ -536,60 +536,60 @@
 *Start of extra BCC test code.************************************************
 ******************************************************************************
 *Done
-    BHI         $6100
-    BHI         $20
-    BHI         $FF
-    BHI         $FFFFFF00
-    
-    BLS         $6100
-    BLS         $20
-    BLS         $FF
-    BLS         $FFFFFF00
-    
-    BCS         $6100
-    BCS         $20
-    BCS         $FF
-    BCS         $FFFFFF00
-    
-    BNE         $6100
-    BNE         $20
-    BNE         $FF
-    BNE         $FFFFFF00
-    
-    BEQ         $6100
-    BEQ         $20
-    BEQ         $FF
-    BEQ         $FFFFFF00
-    
-    BVC         $6100
-    BVC         $20
-    BVC         $FF
-    BVC         $FFFFFF00
-    
-    BVS         $6100
-    BVS         $20
-    BVS         $FF
-    BVS         $FFFFFF00
-    
-    BPL         $6100
-    BPL         $20
-    BPL         $FF
-    BPL         $FFFFFF00
-    
-    BMI         $6100
-    BMI         $20
-    BMI         $FF
-    BMI         $FFFFFF00
-    
-    BGE         $6100
-    BGE         $20
-    BGE         $FF
-    BGE         $FFFFFF00
-    
-    BLT         $6100
-    BLT         $20
-    BLT         $FF
-    BLT         $FFFFFF00
+*    BHI         $6100
+*    BHI         $20
+*    BHI         $FF
+*    BHI         $FFFFFF00
+*    
+*    BLS         $6100
+*    BLS         $20
+*    BLS         $FF
+*    BLS         $FFFFFF00
+*    
+*    BCS         $6100
+*    BCS         $20
+*    BCS         $FF
+*    BCS         $FFFFFF00
+*    
+*    BNE         $6100
+*    BNE         $20
+*    BNE         $FF
+*    BNE         $FFFFFF00
+*    
+*    BEQ         $6100
+*    BEQ         $20
+*    BEQ         $FF
+*    BEQ         $FFFFFF00
+*    
+*    BVC         $6100
+*    BVC         $20
+*    BVC         $FF
+*    BVC         $FFFFFF00
+*    
+*    BVS         $6100
+*    BVS         $20
+*    BVS         $FF
+*    BVS         $FFFFFF00
+*    
+*    BPL         $6100
+*    BPL         $20
+*    BPL         $FF
+*    BPL         $FFFFFF00
+*    
+*    BMI         $6100
+*    BMI         $20
+*    BMI         $FF
+*    BMI         $FFFFFF00
+*    
+*    BGE         $6100
+*    BGE         $20
+*    BGE         $FF
+*    BGE         $FFFFFF00
+*    
+*    BLT         $6100
+*    BLT         $20
+*    BLT         $FF
+*    BLT         $FFFFFF00
 *End of extra BCC test code.**************************************************
 ******************************************************************************
 
@@ -1197,6 +1197,8 @@ INPUT
 ** Put variables and constants here
 *
 *    END    START        ; last line of source
+
+
 
 
 

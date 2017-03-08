@@ -4,7 +4,7 @@
 * Date       : I don't know the date. All I know now is assembly.
 * Description: It disassembles things
 *-----------------------------------------------------------
-    ORG     $3000 ; this is where the test program will be loaded into memory
+    ORG     $7000 ; this is where the test program will be loaded into memory
 START:
     JSR     SETUPOUTPUTBUFFER ; first instruction of program
     BRA     MAIN
@@ -13,6 +13,7 @@ START:
 
     ORG     $1000 ; this is where the rest of the code will be loaded into memory
 MAIN
+   
 * Put program code here
     LEA         AskInputS,A1      ; to store user input in A1
     JSR         moveA1ToBuffer    ; to store in buffer to print
@@ -155,6 +156,7 @@ ASCII2HEXP2:
     BRA         ASCII2HEXP2
 
 LOOP:
+    MOVE.B      #0,RETURNATEND
     LEA         startSpace,A2
     ADD.L       #2,(A2)
     MOVE.L      (A2),A2
@@ -646,27 +648,10 @@ printBcc:
 printJsr:
             LEA     JSRmsg,A1
             JSR     MOVEA1TOBUFFER
-
-            LEA     DOLLAR_SIGN,A1
-            JSR     MOVEA1TOBUFFER
-
-            ADDA.L  #2,A2             ; increment address
-            MOVE.L  (A2)+,D2          ; move post-incremented into D2
-            MOVE.L  D2,BIN2A_VAL      ; store D2 to convert
-            MOVE.L  #32,BIN2A_COUNT
-            JSR     BIN2A_CONVERT
-
-            LEA     BIN2A_BUFFER,A1
-            JSR     MOVEA1TOBUFFER
-
-            LEA     NEWLINE,A1
-            JSR     MOVEA1TOBUFFER
-
-            JSR     PRINTBUFFER       ; print from buffer
-
-            SUBA.L  #2,A2             ; subtract 2 from address 2
-
-            BRA     LOOP
+            
+            MOVE.B  #101,D7
+            
+            BRA     DECODEEA
 
 printNop:
             LEA     NOPmsg,A1         ; load NOP message
@@ -954,7 +939,7 @@ GEmsg           DC.B    'GE',HT,0
 LTmsg           DC.B    'LT',HT,0
 GTmsg           DC.B    'GT',HT,0
 LEmsg           DC.B    'LE',HT,0
-
+RETURNATEND     DS.B        1
 endSpace        DS.L    32 
 startSpace      DS.L    32
 
@@ -964,6 +949,8 @@ inputSpace      DS.L    64
 
 EXIT:
     END    START        ; last line of source
+
+
 
 
 
