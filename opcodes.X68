@@ -743,6 +743,12 @@ printBaddi:
 
 ; the following uses bit masks to compare and decode condition
 decodeCondition:
+
+            MOVEM   A2,-(A7)
+            LEA     startSpace,A2
+            ADD.L   #2,(A2)
+            MOVEM   (A7)+,A2
+
             MOVE.W  (A2),D2
             ANDI.W  #$0F00,D2
             CMP.W   #$0200,D2
@@ -958,6 +964,7 @@ inputSpace      DS.L    64
 
 EXIT:
     END    START        ; last line of source
+
 
 
 

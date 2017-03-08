@@ -44,6 +44,7 @@ TESTLOC DS.L   1           ; store the EA code here
 
 DECODEEA:
     MOVEM.L D0-D7/A1/A3-A6,-(A7) ; back up all the things
+    CLR.L   D3
     BRA DECODEEASIMPLE
 
 
@@ -116,7 +117,13 @@ EAMODE000: *-------------------- Data register direct --------------------------
         CMP.B    #1,D7
         BEQ      PRINTA000
         
-        LEA      DATA_REG, A1
+        SUB.L   #4,D3
+        PEA     END000(PC)
+        CMP.B   #2,D7
+        BEQ     DECODEREGS
+END000:
+        SUB.L   #2,A2
+        BRA EAEXIT
         
 CONTMODE000:     
         JSR     MOVEA1TOBUFFER
@@ -159,7 +166,14 @@ EAMODE001: *-------------------- Address register direct -----------------------
         CMP.B    #1,D7
         BEQ      PRINTA001
         CMP.B    #2,D7
-        LEA      DATA_REG, A1
+        
+        SUB.L   #4,D3
+        PEA     END001(PC)
+        CMP.B   #2,D7
+        BEQ     DECODEREGS
+END001:
+        SUB.L   #2,A2
+        BRA EAEXIT
 CONTMODE001:     
         JSR     MOVEA1TOBUFFER
         MOVE.W   (A2),D2
@@ -204,6 +218,7 @@ EAMODE010: *--------- Address register indirect: sends address value -----------
         LEA     COMMA,A1
         JSR     MOVEA1TOBUFFER
         
+        SUB.L   #4,D3
         PEA     END010(PC)
         CMP.B   #2,D7
         BEQ     DECODEREGS
@@ -242,6 +257,7 @@ EAMODE011: * --------- Address register indirect with post increment -----------
         LEA     COMMA,A1
         JSR     MOVEA1TOBUFFER
         
+        SUB.L   #4,D3
         PEA     END011(PC)
         CMP.B   #2,D7
         BEQ     DECODEREGS
@@ -275,6 +291,7 @@ EAMODE100: *--------- Address register indirect with pre decrement -------------
         LEA     COMMA,A1
         JSR     MOVEA1TOBUFFER
         
+        SUB.L   #4,D3
         PEA     END100(PC)
         CMP.B   #2,D7
         BEQ     DECODEREGS
@@ -339,7 +356,12 @@ IMMED100 ; branch
       ANDI.W  #$0003,D4          
       CMP.B   #3,D4      ;if 1- word; if 2- long
       BEQ     WORDIMMED
+      CMP.B   #1,D4
+      BEQ     BIMMED
       BRA     LONGIMMED
+      
+BIMMED:
+            
       
 WORDIMMED
       MOVEM   A2,-(A7)
@@ -393,6 +415,7 @@ LONGIMMED
       LEA     COMMA,A1
       JSR     MOVEA1TOBUFFER
       
+      ADD.L   #2,D3
       SUB.W   #2,A2
       JSR     DECODEIMEDREGS
       
@@ -413,7 +436,84 @@ DECODEIMEDREGS:
       BEQ       PRINTAR
       CMP.W     #$0080,D2
       BEQ       PRINTADDDEREF
-   
+      CMP.W     #$00C0,D2
+      BEQ       PRINTADDPOSTINC
+      CMP.W     #$0100, D2
+      BEQ       PRINTADDPREDEC 
+      CMP.W     #$01C0,D2
+      BEQ       PRINTMEMADD
+
+PRINTMEMADD
+      MOVEM     A2,-(A7)
+      LEA       startSpace,A2
+      ADD.L     #2,(A2)
+      MOVEM     (A7)+,A2
+      
+      LEA       DOLLAR_SIGN,A1
+      JSR       MOVEA1TOBUFFER
+      
+      MOVE.W    (A2),D2
+      ANDI.W    #$0E00,D2
+      CMP.W     #$0200,D2
+      BEQ       PRINTMEMADDLONG
+      
+      ADD.L     D3,A2
+      ADD.L     #4,A2           ;2??????????????????????????????????
+      MOVE.W    (A2),D2
+      MOVE.L    D2,BIN2A_VAL
+      MOVE.L    #16,BIN2A_COUNT    
+      JSR       BIN2A_CONVERT
+      
+      LEA       BIN2A_BUFFER,A1
+      JSR       MOVEA1TOBUFFER
+
+      RTS
+  
+PRINTMEMADDLONG:
+      MOVEM     A2,-(A7)
+      LEA       startSpace,A2
+      ADD.L     #2,(A2)
+      MOVEM     (A7)+,A2
+
+      ADD.L     D3,A2
+      ADD.L     #4,A2           ;2??????????????????????????????????
+      MOVE.L    (A2),D2
+      MOVE.L    D2,BIN2A_VAL
+      MOVE.L    #32,BIN2A_COUNT    
+      JSR       BIN2A_CONVERT
+      
+      LEA       BIN2A_BUFFER,A1
+      JSR       MOVEA1TOBUFFER
+    
+      ADD.L     #4,A2
+
+      RTS
+
+    
+PRINTADDPOSTINC   
+      LEA       PARENTHESIS_1,A1
+      JSR       MOVEA1TOBUFFER
+      LEA       ADD_REG,A1
+      JSR       MOVEA1TOBUFFER
+      JSR       PRINTNUM
+      LEA       PARENTHESIS_2,A1
+      JSR       MOVEA1TOBUFFER
+      LEA       PLUS_SIGN,A1
+      JSR       MOVEA1TOBUFFER
+      RTS  
+PRINTADDPREDEC   
+      LEA       MINUS_SIGN,A1
+      JSR       MOVEA1TOBUFFER
+      LEA       PARENTHESIS_1,A1
+      JSR       MOVEA1TOBUFFER
+      LEA       ADD_REG,A1
+      JSR       MOVEA1TOBUFFER
+      JSR       PRINTNUM
+      LEA       PARENTHESIS_2,A1
+      JSR       MOVEA1TOBUFFER
+      RTS  
+
+  
 PRINTNUM:
       MOVE.W    (A2),D2
       ANDI.W    #$0E00,D2
@@ -482,7 +582,7 @@ SHORT000 ; branch
 
       LEA     COMMA,A1
       JSR     MOVEA1TOBUFFER
-
+      SUB.L   #2,D3
       SUB.W   #2,A2
       JSR     DECODEREGS
 
@@ -498,11 +598,13 @@ LONG001 ; branch
       LEA       startSpace,A2
       ADD.L     #4,(A2)
       MOVEM     (A7)+,A2
-
+      
+      ADDA.L    #2,A2
+      
       LEA       DOLLAR_SIGN, A1 ; hex
       JSR       MOVEA1TOBUFFER
       
-      ADDA.W    #4, A2 ; read following word from memory
+   ;   ADDA.W    #4, A2 ; read following word from memory
 
       MOVE.L    (A2),D6
       MOVE.L    D6, BIN2A_VAL  
@@ -515,6 +617,7 @@ LONG001 ; branch
       LEA       COMMA,A1
       JSR       MOVEA1TOBUFFER
     
+      ;MOVE.L    #2,D3
       SUB.W     #2,A2
       JSR       DECODEREGS
 
@@ -524,6 +627,8 @@ LONG001 ; branch
       BRA       EAEXIT                    ; branch to exit   
 
 DECODEREGS
+
+      ADD.L     #2,D3
       MOVE.W    (A2),D2
       ANDI.W    #$01C0,D2
       
@@ -540,6 +645,9 @@ DECODEREGS
       BEQ       PRINTAPOSTI
       CMP.W     #$0100,D2 
       BEQ       PRINTAPRED
+      CMP.W     #$01C0,D2
+      BEQ       PRINTMEMADD
+
 
       MOVE.W  (A2),D6  
       MOVE.W  #4, D5
@@ -1002,6 +1110,7 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
   ;  END    START        ; last line of source
 *~Font name~Courier New~
   
+
 
 
 
