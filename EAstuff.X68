@@ -337,16 +337,78 @@ LONGIMMED
       ADDA.W  #2, A2 ; read following word from memory
       CLR.L   D6
 
-      MOVE.W  (A2),D6  
-      MOVE.W  #8, D5
+      MOVE.L  (A2),D6
+        
+      MOVE.L  D6, BIN2A_VAL
+      MOVE.L  #32, BIN2A_COUNT
       JSR     BIN2A_CONVERT
 
-      ADDA.W  #4, A1  ; move along 32 bit extension
+      LEA     BIN2A_BUFFER,A1
+      JSR     MOVEA1TOBUFFER
+      
+      LEA     COMMA,A1
+      JSR     MOVEA1TOBUFFER
+      
+      SUB.W   #2,A2
+      JSR     DECODEIMEDREGS
+      
+
+      ADDA.W  #6, A2  ; move along 32 bit extension
+      
 
       BRA     EAEXIT                    ; branch to exit   
 
+DECODEIMEDREGS:
+      MOVE.W    (A2),D2
+      ANDI.W    #$01C0,D2
+      
+      PEA       EAEXIT(PC) ; GO TO DONECHECKING AFTER RTS
+      CMP.W     #0,D2      
+      BEQ       PRINTDR
+      CMP.W     #$0200,D2
+      BEQ       PRINTAR
+      CMP.W     #$0080,D2
+      BEQ       PRINTADDDEREF
+   
+PRINTNUM:
+      MOVE.W    (A2),D2
+      ANDI.W    #$0E00,D2
+      LSR.W     #8,D2
+      LSR.W     #1,D2
+      
+      MOVE.L    D2,BIN2A_VAL
+      MOVE.L    #4,BIN2A_COUNT
+      JSR       BIN2A_CONVERT
+      
+      LEA       BIN2A_BUFFER,A1
+      JSR       MOVEA1TOBUFFER
+      RTS
 
+PRINTADDDEREF:
+      LEA       PARENTHESIS_1,A1
+      JSR       MOVEA1TOBUFFER
+      
+      LEA       ADD_REG,A1
+      JSR       MOVEA1TOBUFFER
 
+      
+      JSR       PRINTNUM
+      
+      LEA       PARENTHESIS_2,A1
+      JSR       MOVEA1TOBUFFER
+      RTS
+
+PRINTAR:
+      LEA       ADD_REG,A1
+      JSR       MOVEA1TOBUFFER
+      JSR       PRINTNUM
+      RTS         
+   
+PRINTDR:
+      LEA       DATA_REG,A1
+      JSR       MOVEA1TOBUFFER
+      JSR       PRINTNUM
+      RTS 
 
 SHORT000 ; branch
       LEA     DOLLAR_SIGN, A1 ; hex
@@ -811,8 +873,3 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
 
 
 
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
