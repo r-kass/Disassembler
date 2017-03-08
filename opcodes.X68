@@ -59,8 +59,7 @@ noStartOverlap:
     MOVEA.L     A3,A1
     JSR         ASCII2HEXP2       ; convert A1 to hex
 
-    LEA         endSpace,A4
-    MOVE.L      A3,(A4)
+    
 
     CMP.L       #$1000,D2         ; if less than 1000, no end overlap
     BLT         noEndOverlap
@@ -79,6 +78,11 @@ noEndOverlap:
     LEA         newLine,A1        ; to print a new line through buffer
     JSR         moveA1ToBuffer
     JSR         printBuffer
+
+    LEA         endSpace,A4
+    MOVE.L      A3,(A4)
+    LEA         startSpace,A4
+    MOVE.L      A2,(A4)
 
     BRA         LOOP
 
@@ -151,8 +155,12 @@ ASCII2HEXP2:
     BRA         ASCII2HEXP2
 
 LOOP:
-    ADDA.L      #$2,A2 ; this is assuming we load user input's start location -2 into A2 the first time
-
+    LEA         startSpace,A2
+    ADD.L       #2,(A2)
+    MOVE.L      (A2),A2
+    ;ADD.L       #2,A2 ; this is assuming we load user input's start location -2 into A2 the first time
+    ;MOVE.L      (A2),A2
+    
     LEA         endSpace,A3
     MOVE.L      (A3),A3
 
@@ -942,6 +950,7 @@ GTmsg           DC.B    'GT',HT,0
 LEmsg           DC.B    'LE',HT,0
 
 endSpace        DS.L    32 
+startSpace      DS.L    32
 
 inputSpace      DS.L    64
 
@@ -949,6 +958,7 @@ inputSpace      DS.L    64
 
 EXIT:
     END    START        ; last line of source
+
 
 
 

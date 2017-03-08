@@ -201,6 +201,14 @@ EAMODE010: *--------- Address register indirect: sends address value -----------
         LEA     PARENTHESIS_2, A1
         JSR     MOVEA1TOBUFFER 
   
+        LEA     COMMA,A1
+        JSR     MOVEA1TOBUFFER
+        
+        PEA     END010(PC)
+        CMP.B   #2,D7
+        BEQ     DECODEREGS
+END010:
+        SUB.L   #2,A2
         BRA EAEXIT                    ; branch to exit   
  
 
@@ -314,26 +322,50 @@ IMMED100 ; branch
       JSR     MOVEA1TOBUFFER
       
       CLR.L   D5
-      MOVE.B  (A2),D4          
-      CMP.B   #1,D4      ;if 1- word; if 2- long
+      MOVE.W  (A2),D4
+      ROL.W   #4,D4
+      ANDI.W  #$0003,D4          
+      CMP.B   #3,D4      ;if 1- word; if 2- long
       BEQ     WORDIMMED
       BRA     LONGIMMED
       
 WORDIMMED
+      MOVEM   A2,-(A7)
+      LEA     startSpace,A2
+      ADD.L   #2,(A2)
+      MOVEM   (A7)+,A2  
+      
       ADDA.W  #2, A2 ; read following word from memory
       CLR.L   D6
 
-      MOVE.W  (A2),D6  
-      MOVE.W  #4, D5
+      MOVE.W  (A2),D6
+        
+      MOVE.L  D6, BIN2A_VAL
+      MOVE.L  #16, BIN2A_COUNT
       JSR     BIN2A_CONVERT
 
-      ADDA.W  #2, A1  ; move along 32 bit extension
+      LEA     BIN2A_BUFFER,A1
+      JSR     MOVEA1TOBUFFER
+      
+      LEA     COMMA,A1
+      JSR     MOVEA1TOBUFFER
+      
+      SUB.W   #2,A2
+      JSR     DECODEIMEDREGS
+      
 
-      BRA     EAEXIT                    ; branch to exit   
+      ADDA.W  #2, A2  ; move along 32 bit extension
+      
+
+      BRA     EAEXIT                  ; branch to exit   
       
 
 LONGIMMED
-
+      MOVEM   A2,-(A7)
+      LEA     startSpace,A2
+      ADD.L   #4,(A2)
+      MOVEM   (A7)+,A2
+      
       ADDA.W  #2, A2 ; read following word from memory
       CLR.L   D6
 
@@ -362,7 +394,7 @@ DECODEIMEDREGS:
       MOVE.W    (A2),D2
       ANDI.W    #$01C0,D2
       
-      PEA       EAEXIT(PC) ; GO TO DONECHECKING AFTER RTS
+      PEA       DONELONG(PC) ; GO TO DONECHECKING AFTER RTS
       CMP.W     #0,D2      
       BEQ       PRINTDR
       CMP.W     #$0200,D2
@@ -410,7 +442,16 @@ PRINTDR:
       JSR       PRINTNUM
       RTS 
 
+DONELONG:
+      ADD.L     #4,A2
+      BRA       EAEXIT
+
 SHORT000 ; branch
+      MOVEM   A2,-(A7)
+      LEA     startSpace,A2
+      ADD.L   #2,(A2)
+      MOVEM   (A7)+,A2
+
       LEA     DOLLAR_SIGN, A1 ; hex
       JSR     MOVEA1TOBUFFER 
       
@@ -427,31 +468,70 @@ SHORT000 ; branch
       LEA     BIN2A_BUFFER,A1
       JSR     MOVEA1TOBUFFER
 
-      ADDA.W  #2, A1  ; move along 32 bit extension
+      LEA     COMMA,A1
+      JSR     MOVEA1TOBUFFER
+
+      SUB.W   #2,A2
+      JSR     DECODEREGS
+
+      ;SUB.W   #2,A2
+      ;ADDA.W  #2, A2  ; move along 16 bit extension
 
       BRA     EAEXIT                    ; branch to exit   
 
 
 
 LONG001 ; branch
-      LEA     DOLLAR_SIGN, A1 ; hex
-      JSR     MOVEA1TOBUFFER
+      MOVEM     A2,-(A7)
+      LEA       startSpace,A2
+      ADD.L     #4,(A2)
+      MOVEM     (A7)+,A2
+
+      LEA       DOLLAR_SIGN, A1 ; hex
+      JSR       MOVEA1TOBUFFER
       
-      ADDA.W  #2, A2 ; read following word from memory
+      ADDA.W    #4, A2 ; read following word from memory
 
-      MOVE.W  (A2),D6  
-      MOVE.W  #8, D5
-      JSR     BIN2A_CONVERT
+      MOVE.W    (A2),D6
+      MOVE.L    D6, BIN2A_VAL  
+      MOVE.L    #32, BIN2A_COUNT
+      JSR       BIN2A_CONVERT
+    
+      LEA       BIN2A_BUFFER,A1
+      JSR       MOVEA1TOBUFFER
+    
+      LEA       COMMA,A1
+      JSR       MOVEA1TOBUFFER
+    
+      SUB.W     #2,A2
+      JSR       DECODEREGS
 
-      ADDA.W  #4, A1 
 
-      BRA     EAEXIT                    ; branch to exit   
+      ADDA.W    #2, A2 
 
+      BRA       EAEXIT                    ; branch to exit   
+
+DECODEREGS
+      MOVE.W    (A2),D2
+      ANDI.W    #$01C0,D2
+      
+      PEA       DONEREGS(PC) ; GO TO DONECHECKING AFTER RTS
+      CMP.W     #0,D2      
+      BEQ       PRINTDR
+      CMP.W     #$0200,D2
+      BEQ       PRINTAR
+      CMP.W     #$0080,D2
+      BEQ       PRINTADDDEREF
+
+DONEREGS:
+      ;JSR       PRINTNUM
+      ADD.L     #2,A2
+      BRA       EAEXIT
 
 EAERROR:
       LEA     EAERRORMSG, A1
       JSR     MOVEA1TOBUFFER
-      BRA     EAEXIT   
+      RTS   
 
 *-----------------------------SPECIAL SNOWFLAKES-------------------------------*
 
@@ -873,3 +953,8 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
 
 
 
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
