@@ -513,8 +513,7 @@ printADDA:
             CMP.W   #0,D2
             BEQ     PRINTADDAW
             LEA     Lmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             
             BRA     DECODEEA
@@ -632,10 +631,11 @@ printJsr:
             JSR     MOVEA1TOBUFFER
             
             LEA     DOLLAR_SIGN,A1
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ADDA.L  #2,A2
-            MOVE.L  (A2)+,BIN2A_VAL
+            MOVE.L  (A2)+,D2
+            MOVE.L  D2,BIN2A_VAL
             MOVE.L  #32,BIN2A_COUNT
             JSR     BIN2A_CONVERT
             
@@ -934,6 +934,7 @@ inputSpace      DS.L    64
 
 EXIT:
     END    START        ; last line of source
+
 
 
 

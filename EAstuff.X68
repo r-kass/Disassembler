@@ -165,6 +165,7 @@ CONTMODE001:
         MOVE.W   (A2),D2
         LSR.W    #8,D2
         LSR.W    #1,D2
+        ANDI.W   #$0007,D2
         MOVE.L   D2, BIN2A_VAL
         MOVE.L   #4, BIN2A_COUNT
         JSR      BIN2A_CONVERT
@@ -501,9 +502,13 @@ PRINTMOVEMD:
       MOVE.L   D4,D6   ; copy count to D6
       SUBI.L   #1, D6
       
-      MOVE.W   D6,D1
-      MOVE.B   #3,D0
-      TRAP     #15
+      MOVE.L   D6, BIN2A_VAL   ; put register value in conversion subroutine
+      MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
+      JSR      BIN2A_CONVERT
+
+      LEA      BIN2A_BUFFER, A1
+      JSR     MOVEA1TOBUFFER
+
 
       BRA      MOVEMEALOOP
 
@@ -516,9 +521,13 @@ PRINTMOVEMA:
       MOVE.L  D4,D6   ; copy count to D6
       SUBI.L  #9, D6
       
-      MOVE.B  D6,D1
-      MOVE.B  #3,D0
-      TRAP    #15
+      MOVE.L   D6, BIN2A_VAL   ; put register value in conversion subroutine
+      MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
+      JSR      BIN2A_CONVERT
+
+      LEA      BIN2A_BUFFER, A1
+      JSR     MOVEA1TOBUFFER
+
 
       BRA MOVEMEALOOP
 

@@ -135,7 +135,7 @@
     BGE     MAIN
     BLT     MAIN
     BGT     MAIN
-    BLE     SUBROUTINE
+    BLE     MAIN
     
     
     * JSR
@@ -157,6 +157,7 @@ subroutine:
 *
 *
 * Put variables and constants here
+
 
 
 
