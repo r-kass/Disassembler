@@ -195,7 +195,7 @@ EAMODE010: *--------- Address register indirect: sends address value -----------
         JSR      BIN2A_CONVERT
 
         LEA      BIN2A_BUFFER, A1
-        JSR      MOVEA1TOBUFFER
+        JSR     MOVEA1TOBUFFER
         ; --------------------
 
         LEA     PARENTHESIS_2, A1
@@ -237,7 +237,7 @@ EAMODE011: * --------- Address register indirect with post increment -----------
         ; --------------------
 
         LEA     PLUS_SIGN, A1
-        JSR     MOVEA1TOBUFFER  
+        JSR     MOVEA1TOBUFFER    
 
         LEA     COMMA,A1
         JSR     MOVEA1TOBUFFER
@@ -502,7 +502,7 @@ LONG001 ; branch
       LEA       DOLLAR_SIGN, A1 ; hex
       JSR       MOVEA1TOBUFFER
       
-      ADDA.W    #2, A2 ; read following word from memory
+      ADDA.W    #4, A2 ; read following word from memory
 
       MOVE.L    (A2),D6
       MOVE.L    D6, BIN2A_VAL  
@@ -569,6 +569,7 @@ PRINTAPOSTI:
       JSR       MOVEA1TOBUFFER
       RTS  
 
+      BRA       EAEXIT                    ; branch to exit   
 
 PRINTA:
       LEA       PARENTHESIS_1,A1
@@ -1002,7 +1003,6 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
 *~Font name~Courier New~
   
 
-    
 
 
 

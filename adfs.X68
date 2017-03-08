@@ -9,6 +9,10 @@ START:                  ; first instruction of program
 
 * Put program code here
 
+        MOVE.B  #1,D1
+        LSR.B   #1,D1
+        BCS     HERE
+
         MOVEM.L D0,EXIT
         MOVEM.L D0-D1,EXIT
         MOVEM.L D0-D2,EXIT
@@ -17,15 +21,41 @@ START:                  ; first instruction of program
         MOVEM.L D0-D5,EXIT
         MOVEM.L D0-D6,EXIT
         MOVEM.L D0-D7,EXIT
-        
+HERE:    
         MOVEM.L D1,EXIT
-        MOVEM.L D1-D1,EXIT
         MOVEM.L D1-D2,EXIT
         MOVEM.L D1-D3,EXIT
         MOVEM.L D1-D4,EXIT
         MOVEM.L D1-D5,EXIT
         MOVEM.L D1-D6,EXIT
         MOVEM.L D1-D7,EXIT
+        
+        MOVEM.L D2,EXIT
+        MOVEM.L D2-D3,EXIT
+        MOVEM.L D2-D4,EXIT
+        MOVEM.L D2-D5,EXIT
+        MOVEM.L D2-D6,EXIT
+        MOVEM.L D2-D7,EXIT
+        
+        MOVEM.L D3,EXIT
+        MOVEM.L D3-D4,EXIT
+        MOVEM.L D3-D5,EXIT
+        MOVEM.L D3-D6,EXIT
+        MOVEM.L D3-D7,EXIT
+        
+        MOVEM.L D4,EXIT
+        MOVEM.L D4-D5,EXIT
+        MOVEM.L D4-D6,EXIT
+        MOVEM.L D4-D7,EXIT
+        
+        MOVEM.L D5,EXIT
+        MOVEM.L D5-D6,EXIT
+        MOVEM.L D5-D7,EXIT
+        
+        MOVEM.L D6,EXIT
+        MOVEM.L D6-D7,EXIT
+        
+        MOVEM.L D7,EXIT
         
         MOVEM.L EXIT,A0-A3/D0-D3
         
