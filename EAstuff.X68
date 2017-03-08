@@ -95,16 +95,14 @@ EAMODE000: *-------------------- Data register direct --------------------------
         JSR     ADDQEA
 
         LEA     DATA_REG, A1
-        MOVE.B  #14,D0
-        TRAP    #15
+        JSR     MOVEA1TOBUFFER
 
         MOVE.L   D2, BIN2A_VAL   ; put register value in conversion subroutine
         MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
         JSR      BIN2A_CONVERT
 
         LEA      BIN2A_BUFFER, A1
-        MOVE.B   #14,D0
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
 
         CMP.B   #100,D7
         BEQ     EAEXIT
@@ -112,7 +110,7 @@ EAMODE000: *-------------------- Data register direct --------------------------
         BEQ     RETURNEA
         
         LEA      COMMA,A1
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
         
         CMP.B    #1,D7
         BEQ      PRINTA000
@@ -120,7 +118,8 @@ EAMODE000: *-------------------- Data register direct --------------------------
         LEA      DATA_REG, A1
         
 CONTMODE000:     
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
+         
         MOVE.W   (A2),D2
         LSR.W    #8,D2
         LSR.W    #1,D2
@@ -130,8 +129,7 @@ CONTMODE000:
         JSR      BIN2A_CONVERT
         
         LEA      BIN2A_BUFFER,A1
-        MOVE.B   #14,D0
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
 
        ; CMP.B    #2,D7
        ; BEQ      MOVEEA
@@ -145,26 +143,24 @@ PRINTA000:
 EAMODE001: *-------------------- Address register direct -------------------------------
 
         LEA     ADD_REG, A1
-        MOVE.B  #14,D0
-        TRAP    #15
+        JSR     MOVEA1TOBUFFER
 
         MOVE.L   D2, BIN2A_VAL   ; put register value in conversion subroutine
         MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
         JSR      BIN2A_CONVERT
 
         LEA      BIN2A_BUFFER, A1
-        MOVE.B   #14,D0
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
 
-              LEA      COMMA,A1
-        TRAP     #15
+        LEA      COMMA,A1
+        JSR     MOVEA1TOBUFFER
         
         CMP.B    #1,D7
         BEQ      PRINTA001
         CMP.B    #2,D7
         LEA      DATA_REG, A1
 CONTMODE001:     
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
         MOVE.W   (A2),D2
         LSR.W    #8,D2
         LSR.W    #1,D2
@@ -173,8 +169,7 @@ CONTMODE001:
         JSR      BIN2A_CONVERT
         
         LEA      BIN2A_BUFFER,A1
-        MOVE.B   #14,D0
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
 
         BRA EAEXIT                    ; branch to exit   
 
@@ -187,26 +182,22 @@ PRINTA001:
 EAMODE010: *--------- Address register indirect: sends address value ----------------
 
         LEA     PARENTHESIS_1, A1
-        MOVE.B  #14,D0
-        TRAP    #15    
+        JSR     MOVEA1TOBUFFER  
         
         ; eamode001 ---------
         LEA     ADD_REG, A1
-        MOVE.B  #14,D0
-        TRAP    #15
+        JSR     MOVEA1TOBUFFER
 
         MOVE.L   D2, BIN2A_VAL   ; put register value in conversion subroutine
         MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
         JSR      BIN2A_CONVERT
 
         LEA      BIN2A_BUFFER, A1
-        MOVE.B   #14,D0
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
         ; --------------------
 
         LEA     PARENTHESIS_2, A1
-        MOVE.B  #14,D0
-        TRAP    #15  
+        JSR     MOVEA1TOBUFFER 
   
         BRA EAEXIT                    ; branch to exit   
  
@@ -218,30 +209,25 @@ EAMODE011: * --------- Address register indirect with post increment -----------
         ; eamode010 ---------
 
         LEA     PARENTHESIS_1, A1
-        MOVE.B  #14,D0
-        TRAP    #15    
+        JSR     MOVEA1TOBUFFER  
         
         LEA     ADD_REG, A1
-        MOVE.B  #14,D0
-        TRAP    #15
+        JSR     MOVEA1TOBUFFER
 
         MOVE.L   D2, BIN2A_VAL   ; put register value in conversion subroutine
         MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
         JSR      BIN2A_CONVERT
 
         LEA      BIN2A_BUFFER, A1
-        MOVE.B   #14,D0
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
 
         LEA     PARENTHESIS_2, A1
-        MOVE.B  #14,D0
-        TRAP    #15  
+        JSR     MOVEA1TOBUFFER 
  
         ; --------------------
 
         LEA     PLUS_SIGN, A1
-        MOVE.B  #14,D0
-        TRAP    #15    
+        JSR     MOVEA1TOBUFFER    
 
         BRA EAEXIT                    ; branch to exit   
  
@@ -249,30 +235,25 @@ EAMODE011: * --------- Address register indirect with post increment -----------
 EAMODE100: *--------- Address register indirect with pre decrement ---------------
 
         LEA     MINUS_SIGN, A1
-        MOVE.B  #14,D0
-        TRAP    #15    
+        JSR     MOVEA1TOBUFFER  
         
         ; eamode010 ---------
 
         LEA     PARENTHESIS_1, A1
-        MOVE.B  #14,D0
-        TRAP    #15    
+        JSR     MOVEA1TOBUFFER  
         
         LEA     ADD_REG, A1
-        MOVE.B  #14,D0
-        TRAP    #15
+        JSR     MOVEA1TOBUFFER
 
         MOVE.L   D2, BIN2A_VAL   ; put register value in conversion subroutine
         MOVE.L   #4, BIN2A_COUNT ; converting one digit, 4 bits 
         JSR      BIN2A_CONVERT
 
         LEA      BIN2A_BUFFER, A1
-        MOVE.B   #14,D0
-        TRAP     #15
+        JSR     MOVEA1TOBUFFER
 
         LEA     PARENTHESIS_2, A1
-        MOVE.B  #14,D0
-        TRAP    #15  
+        JSR     MOVEA1TOBUFFER 
  
         ; --------------------
         
@@ -302,8 +283,7 @@ ADDQEA:
       BNE     RETURNEA
 
       LEA     POUND, A1
-      MOVE.B  #14,D0
-      TRAP    #15
+      JSR     MOVEA1TOBUFFER
       
       MOVE.W  (A2),D2
       ANDI.W  #$0E00,D2
@@ -315,8 +295,7 @@ ADDQEA:
       TRAP    #15
       
       LEA     COMMA,A1
-      MOVE.B  #14,D0
-      TRAP    #15
+      JSR     MOVEA1TOBUFFER
       
       MOVE.B  #100,D7
 
@@ -327,12 +306,10 @@ RETURNEA:
     
 IMMED100 ; branch
       LEA     POUND, A1
-      MOVE.B  #14,D0
-      TRAP    #15    
+      JSR     MOVEA1TOBUFFER   
         
       LEA     DOLLAR_SIGN, A1 ;immediate data - hex
-      MOVE.B  #14,D0
-      TRAP    #15    
+      JSR     MOVEA1TOBUFFER
       
       CLR.L   D5
       MOVE.B  (A2),D4          
@@ -371,8 +348,7 @@ LONGIMMED
 
 SHORT000 ; branch
       LEA     DOLLAR_SIGN, A1 ; hex
-      MOVE.B  #14,D0
-      TRAP    #15  
+      JSR     MOVEA1TOBUFFER 
       
       ADDA.W  #2, A2 ; read following word from memory
       CLR.L   D6
@@ -385,8 +361,7 @@ SHORT000 ; branch
 
 
       LEA     BIN2A_BUFFER,A1
-      MOVE.B  #14,D0
-      TRAP    #15
+      JSR     MOVEA1TOBUFFER
 
       ADDA.W  #2, A1  ; move along 32 bit extension
 
@@ -396,8 +371,7 @@ SHORT000 ; branch
 
 LONG001 ; branch
       LEA     DOLLAR_SIGN, A1 ; hex
-      MOVE.B  #14,D0
-      TRAP    #15  
+      JSR     MOVEA1TOBUFFER
       
       ADDA.W  #2, A2 ; read following word from memory
 
@@ -412,8 +386,7 @@ LONG001 ; branch
 
 EAERROR:
       LEA     EAERRORMSG, A1
-      MOVE.B  #13,D0
-      TRAP    #15
+      JSR     MOVEA1TOBUFFER
       BRA     EAEXIT   
 
 *-----------------------------SPECIAL SNOWFLAKES-------------------------------*
@@ -452,8 +425,7 @@ MOVEMEAMEM:
        JSR      BIN2A_CONVERT       
        
        LEA      BIN2A_BUFFER,A1
-       MOVE.B   #14,D0
-       TRAP     #15
+       JSR     MOVEA1TOBUFFER
        
        SUB.W    #2,A2
        MOVE.W   (A2)+,D3     ; opcode
@@ -462,7 +434,7 @@ MOVEMEAMEM:
        BEQ      MOVEMEXIT
        
        LEA      COMMA,A1
-       TRAP     #15
+       JSR     MOVEA1TOBUFFER
        
 MOVEMEA:  
        CLR.W   D7
@@ -490,8 +462,7 @@ EXITMOVEMEALOOP:
 
        
        LEA      COMMA,A1
-       MOVE.B   #14,D0
-       TRAP     #15
+       JSR     MOVEA1TOBUFFER
        BRA      MOVEMEAMEM
 
 ;MOVEMCOMMAM
@@ -499,8 +470,7 @@ EXITMOVEMEALOOP:
        ;BEQ      MOVEMEXIT
        ;MOVE.B   #1, MOVEMCOUNT
        ;LEA      COMMA,A1
-       ;MOVE.B   #14,D0
-       ;TRAP     #15
+       ;JSR     MOVEA1TOBUFFER
        ;BRA      MOVEMEAMEM
        
 ;MOVEMCOMMAR
@@ -508,8 +478,7 @@ EXITMOVEMEALOOP:
        ;BEQ      MOVEMEXIT
        ;MOVE.B   #1, MOVEMMEMCOUNT
        ;LEA      COMMA,A1
-       ;MOVE.B   #14,D0
-       ;TRAP     #15
+       ;JSR     MOVEA1TOBUFFER
        ;BRA      MOVEMEA       
        
 
@@ -526,8 +495,7 @@ PRINTMOVEM2:
       
 PRINTMOVEMD:
       LEA      DATA_REG, A1
-      MOVE.B   #14,D0
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
 
       MOVE.L   D4,D6   ; copy count to D6
       SUBI.L   #1, D6
@@ -542,8 +510,7 @@ PRINTMOVEMD:
 PRINTMOVEMA:
       LEA     ADD_REG, A1
 
-      MOVE.B  #14,D0
-      TRAP    #15
+      JSR     MOVEA1TOBUFFER
 
       MOVE.L  D4,D6   ; copy count to D6
       SUBI.L  #9, D6
@@ -557,17 +524,16 @@ PRINTMOVEMA:
 PRINTSLASH
 
       LEA     SLASH, A1
-      MOVE.B  #14,D0
-      TRAP    #15
+      JSR     MOVEA1TOBUFFER
       BRA     PRINTMOVEM2
 
 MOVEMEXIT:
       
       
       LEA     NEWLINE,A1
-      MOVE.B  #14,D0
-      TRAP    #15
-      
+      JSR     MOVEA1TOBUFFER
+      JSR     PRINTBUFFER
+        
       ADDA.L  #4,A2
       BRA     LOOP
 *-----------------------------END MOVEM SUBROUTINES-------------------------------*
@@ -594,16 +560,14 @@ BCCEA: ;special case
       MOVE.B    D6,BIN2A_VAL
       MOVE.B    #8,BIN2A_COUNT
       
-      MOVE.B    #14,D0
-      TRAP      #15
+      JSR     MOVEA1TOBUFFER
 
       BRA EAEXIT      
       
 MOVEQEA: ;special case 
       MOVEM.L D0-D7/A1/A3-A6,-(A7)
       LEA       POUND,A1
-      MOVE.B    #14,D0
-      TRAP      #15
+      JSR     MOVEA1TOBUFFER
 
       MOVE.W    (A2),D1  ; only move last byte
       ANDI.W    #$003F,D1
@@ -612,11 +576,10 @@ MOVEQEA: ;special case
       TRAP      #15
       
       LEA       COMMA,A1
-      MOVE.B    #14,D0
-      TRAP      #15
+      JSR     MOVEA1TOBUFFER
 
       LEA       DATA_REG,A1
-      TRAP      #15
+      JSR     MOVEA1TOBUFFER
 
       MOVE.W    (A2),D1
       ANDI.W    #$0E00,D1
@@ -639,9 +602,7 @@ MOVEQEA: ;special case
 *
 *  *   ADDA.W   #2, A1 
 *      LEA      BIN2A_BUFFER, A1
-*      MOVE.B   #14,D0
-*      TRAP     #15
-*
+*      JSR     MOVEA1TOBUFFER
 * 
 *      BRA     EAEXIT        
 
@@ -656,19 +617,17 @@ PRINTADDIWORD:
 
 
       LEA      POUND,A1
-      MOVE.B   #14,D0
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
       LEA      DOLLAR_SIGN,A1
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
   *   ADDA.W   #4, A1 
       LEA      BIN2A_BUFFER, A1
-      MOVE.B   #14,D0
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
       LEA      COMMA,A1
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
       MOVE.B   #101,D7
       JSR DECODEEASIMPLE
@@ -688,19 +647,17 @@ PRINTADDILONG:
 
   *   ADDA.W   #8, A1 
       LEA      POUND,A1
-      MOVE.B   #14,D0
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
       LEA      DOLLAR_SIGN,A1
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
   *   ADDA.W   #4, A1 
       LEA      BIN2A_BUFFER, A1
-      MOVE.B   #14,D0
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
       LEA      COMMA,A1
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
       MOVE.B   #101,D7
       JSR DECODEEASIMPLE
@@ -717,8 +674,7 @@ PRINTROTATIONEA:
       CMPI.W  #0,D2
       BEQ     PRINTROTPOUND
       LEA     DATA_REG,A1
-      MOVE.B  #14,D0
-      TRAP    #15
+      JSR     MOVEA1TOBUFFER
       
 CONTROTEA:
       MOVE.W   (A2),D2
@@ -731,16 +687,13 @@ CONTROTEA:
       JSR      BIN2A_CONVERT
 
       LEA      BIN2A_BUFFER, A1
-      MOVE.B   #14,D0
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
       LEA      COMMA,A1
-      MOVE.B   #14,D0
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
       
       LEA     DATA_REG,A1
-      MOVE.B  #14,D0
-      TRAP    #15
+      JSR     MOVEA1TOBUFFER
 
       MOVE.W  (A2),D2
       ANDI.W  #$0005,D2
@@ -752,15 +705,13 @@ CONTROTEA:
       JSR      BIN2A_CONVERT
 
       LEA      BIN2A_BUFFER, A1
-      MOVE.B   #14,D0
-      TRAP     #15
+      JSR     MOVEA1TOBUFFER
 
       BRA      EAEXIT
 
 PRINTROTPOUND:
       LEA    POUND,A1
-      MOVE.B #14,D0
-      TRAP   #15
+      JSR     MOVEA1TOBUFFER
       
       BRA CONTROTEA
 
@@ -770,8 +721,8 @@ EAEXIT: ; SET ERROR FLAG TODO
         MOVEM.L (A7)+,D0-D7/A1/A3-A6 ; put everything back on the stack
         MOVE.L  #0,D7
         LEA     NEWLINE,A1
-        MOVE.B  #14,D0
-        TRAP    #15
+        JSR     MOVEA1TOBUFFER
+        JSR     PRINTBUFFER
         
         BRA     LOOP                  ; return to sender
 
@@ -849,3 +800,8 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
 
 
 
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~

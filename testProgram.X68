@@ -17,14 +17,14 @@
     CLR.L   D1 ;CLR.L	D1
 
     * AND
-    AND.B   A1,D2 ;AND.B	D1,D2
-    AND.W   A1,D2 ;AND.W	D1,D2
-    AND.L   A1,D2 ;AND.L	D1,D2
+    AND.B   D1,D2 ;AND.B	D1,D2
+    AND.W   D1,D2 ;AND.W	D1,D2
+    AND.L   D1,D2 ;AND.L	D1,D2
     
     * OR
-    OR.B    A1,D2 ;OR.B	D1,D2
-    OR.W    A1,D2 ;OR.W	D1,D2
-    OR.L    A1,D2 ;OR.L	D1,D2
+    OR.B    D1,D2 ;OR.B	D1,D2
+    OR.W    D1,D2 ;OR.W	D1,D2
+    OR.L    D1,D2 ;OR.L	D1,D2
     
     * ADD commands
     ;ADD.B  #$12,D0
@@ -164,3 +164,10 @@ subroutine:
 
 
 
+
+
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~

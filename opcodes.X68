@@ -6,17 +6,17 @@
 *-----------------------------------------------------------
     ORG     $3000 ; this is where the test program will be loaded into memory
 START: 
-                  ; first instruction of program
+    JSR     SETUPOUTPUTBUFFER ; first instruction of program
     BRA     MAIN
-    INCLUDE 'test.X68' ; run the testProgram Subroutine
-   
+    INCLUDE 'testProgram.X68' ; run the testProgram Subroutine
+    
 
     ORG     $1000 ; this is where the rest of the code will be loaded into memory
 MAIN
 * Put program code here
     LEA         AskInputS,A1
-    MOVE.B      #13,D0
-    TRAP        #15
+    JSR         moveA1ToBuffer
+    JSR         printBuffer
     
     
     ; get start location input
@@ -41,8 +41,8 @@ noStartOverlap:
     MOVE.L      D2,A5     ; start decoding at user input
     
     LEA         AskInputE,A1
-    MOVE.B      #13,D0
-    TRAP        #15
+    JSR         moveA1ToBuffer
+    JSR         printBuffer
     
     ; get end location input
     LEA         inputSpace,A1
@@ -72,8 +72,8 @@ noEndOverlap:
     SUB.L       #2,A2
     
     LEA         newLine,A1
-    MOVE.B      #13,D0
-    TRAP        #15
+    JSR         moveA1ToBuffer
+    JSR         printBuffer
     
     BRA         LOOP
 
@@ -86,20 +86,20 @@ checkOverlap:
 printOverlap
     MOVE.L  #$0,(SP)
     LEA     overlapMsg,A1
-    MOVE.B  #14,D0
-    TRAP    #15
+    JSR         moveA1ToBuffer
+    JSR         printBuffer
     BRA     MAIN
 
 startNotBeforeEnd:
     LEA        endb4start,A1
-    MOVE.B     #14,D0
-    TRAP       #15 
+    JSR         moveA1ToBuffer
+    JSR         printBuffer
     BRA        MAIN
     
 not8digits:
     LEA         wronglength,A1
-    MOVE.B      #13,D0
-    TRAP        #15
+    JSR         moveA1ToBuffer
+    JSR         printBuffer
     BRA         MAIN
 
 ASCII2HEXP1:      ; decodes ASCII data between A1 and A2 (not including the value at A2)
@@ -134,8 +134,8 @@ LT41check:
 
 InvalidHexNumber:
     LEA         InvalidHex,A1
-    MOVE.B      #13,D0
-    TRAP        #15
+    JSR         moveA1ToBuffer
+    JSR         printBuffer
     BRA         MAIN    
     
 ASCII2HEXP2:
@@ -159,8 +159,8 @@ LOOP:
     JSR         BIN2A_CONVERT
     
     LEA         BIN2A_BUFFER,A1
-    MOVE.B      #14,D0
-    TRAP        #15          
+    JSR         moveA1ToBuffer
+         
 
     BRA         DECODE
 DECODE:          
@@ -331,14 +331,13 @@ AFTERMOVE
             
 printUNKNOWN:
             LEA     UNKNOWNmsg,A1
-            MOVE.B  #13,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
+            JSR     PRINTBUFFER
             BRA     LOOP            
 
 printUnknownSize:
             LEA     UnknownSizemsg,A1   
-            MOVE.B  #13,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             RTS       
       
 printSize:
@@ -352,8 +351,7 @@ printSize:
       
 printCMP:
             LEA     CMPmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     moveA1ToBuffer
             
             ; check size
             MOVE.W  (A2),D2
@@ -366,8 +364,7 @@ printCMP:
             
 printAND:
             LEA     ANDmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2
@@ -380,8 +377,7 @@ printAND:
     
 printOR:
             LEA     ORmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2
@@ -393,8 +389,7 @@ printOR:
             
 printLSL:
             LEA     LSLmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             MOVE.B  #1,D7
             ; check size
@@ -407,8 +402,7 @@ printLSL:
 
 printLSR:
             LEA     LSRmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2
@@ -419,8 +413,7 @@ printLSR:
 
 printASL:
             LEA     ASLmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2
@@ -431,8 +424,7 @@ printASL:
 
 printASR:
             LEA     ASRmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2
@@ -443,8 +435,7 @@ printASR:
 
 printROL:
             LEA     ROLmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2
@@ -455,8 +446,7 @@ printROL:
             
 printROR:
             LEA     RORmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             ; check size
@@ -468,8 +458,7 @@ printROR:
             
 printADD:
             LEA     ADDmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2
@@ -482,8 +471,7 @@ printADD:
             
 printADDI:
             LEA     ADDImsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2
@@ -503,8 +491,7 @@ printADDISIZE:
 
 printSUB:
             LEA     SUBmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2
@@ -516,8 +503,7 @@ printSUB:
 
 printADDA:
             LEA     ADDAmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
              
             MOVE.B  #1,D7
             ; check size
@@ -534,14 +520,12 @@ printADDA:
             BRA     DECODEEA
 PRINTADDAW:
             LEA     Wmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             BRA     DECODEEA
 
 printADDQ:
             LEA     ADDQmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             MOVE.L  #3,D7
             ; check size
@@ -553,8 +537,7 @@ printADDQ:
             
 printMove:
             LEA     MOVEmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             MOVE.B  #2,D7
             
@@ -568,8 +551,7 @@ printMove:
 
 printMovem:
             LEA     MOVEMmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ; check size
             MOVE.W  (A2),D2           ; decode in D2
@@ -578,48 +560,41 @@ printMovem:
             CMP.W   #0,D2
             BEQ     printMovemW
             LEA     Lmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             BRA     DECODEMOVEMEA
             
 printMovemW:
             LEA     Wmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             BRA     DECODEMOVEMEA 
 
 printMoveq:
             LEA     MOVEQmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             BRA     MOVEQEA
 
 printLEA:
             LEA     LEAmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             MOVE.L  #1,D7
             BRA     DECODEEA
 
 printMuls:
             LEA     MULSmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             BRA     DECODEEA
 
 printDivu:
             LEA     DIVUmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             BRA     DECODEEA
 
 printClr:
             LEA     CLRmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             MOVE.B  #100,D7
             ; decode size
@@ -631,14 +606,12 @@ printClr:
             
 printBcc:
             LEA     Bccmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             JSR     decodeCondition
             
             LEA     DOLLAR_SIGN,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             ADDA.L  #2,A2
             MOVE.W  (A2),D3
@@ -647,19 +620,16 @@ printBcc:
             JSR     BIN2A_CONVERT
             
             LEA     BIN2A_BUFFER,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
          
             LEA     NEWLINE,A1
-            MOVE.B  #14,D0
-            TRAP    #15
-
+            JSR     MOVEA1TOBUFFER
+            JSR     PRINTBUFFER
          
             BRA     LOOP
 printJsr:
             LEA     JSRmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             LEA     DOLLAR_SIGN,A1
             TRAP    #15
@@ -670,8 +640,12 @@ printJsr:
             JSR     BIN2A_CONVERT
             
             LEA     BIN2A_BUFFER,A1
-            MOVE.B  #13,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+
+            JSR     PRINTBUFFER
             
             SUBA.L  #2,A2
             
@@ -679,20 +653,27 @@ printJsr:
          
 printNop:
             LEA     NOPmsg,A1
-            MOVE.B  #13,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR     PRINTBUFFER
             BRA     LOOP
    
 printRts:
             LEA     RTSmsg,A1
-            MOVE.B  #13,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR     PRINTBUFFER
             BRA     LOOP
 
 printMovea:
             LEA     MOVEAmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
             MOVE.L  #1,D7
             ;decode size
@@ -713,38 +694,32 @@ printSize2:
 
 printL:
             LEA     Lmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR    MOVEA1TOBUFFER
             RTS
             
 printW:
             LEA     Wmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             RTS
             
 printB:
             LEA     Bmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             RTS
             
 printLaddi:
             LEA     Lmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             BRA     PRINTADDILONG
             
 printWaddi:
             LEA     Wmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             BRA     PRINTADDIWORD
             
 printBaddi:
             LEA     Bmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             BRA     PRINTADDIWORD
 
 
@@ -784,8 +759,7 @@ decodeCondition:
 
 printHI:
             LEA     HImsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
 *            LEA     NEWLINE,A1
 *            MOVE.B  #14,D0
@@ -795,23 +769,19 @@ printHI:
 
 printLS:
             LEA     LSmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
-                       
+            JSR     MOVEA1TOBUFFER
             RTS
             
 printCC:
             LEA     CCmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
            
 
             RTS
             
 printCS:
             LEA     CSmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
 
 
             
@@ -819,8 +789,7 @@ printCS:
 
 printNE:
             LEA     NEmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
         
 
             
@@ -828,8 +797,7 @@ printNE:
 
 printEQ:
             LEA     EQmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
 
 
@@ -837,16 +805,14 @@ printEQ:
 
 printVC:
             LEA     VCmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
 
 
             RTS
 
 printVS:
             LEA     VSmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
 
 
@@ -854,8 +820,7 @@ printVS:
             
 printPL:
             LEA     PLmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
 
             
@@ -863,8 +828,7 @@ printPL:
             
 printMI:
             LEA     MImsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
 
             
@@ -872,8 +836,7 @@ printMI:
             
 printGE:
             LEA     GEmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
 
             
@@ -881,8 +844,7 @@ printGE:
             
 printLT:
             LEA     LTmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
 
             
@@ -890,8 +852,7 @@ printLT:
             
 printGT:
             LEA     GTmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
 
             
@@ -899,14 +860,14 @@ printGT:
     
 printLE:
             LEA     LEmsg,A1
-            MOVE.B  #14,D0
-            TRAP    #15
+            JSR     MOVEA1TOBUFFER
             
 
             
             RTS        
 
-    INCLUDE     'EAstuff.X68'             
+    INCLUDE     'EAstuff.X68'    
+    INCLUDE     'outputBuffer.X68'         
 
 HT              EQU     $09
 CR              EQU     $0D
@@ -967,7 +928,9 @@ LTmsg           DC.B    'LT',HT,0
 GTmsg           DC.B    'GT',HT,0
 LEmsg           DC.B    'LE',HT,0
     
-inputSpace  DS.L    64            ; don't put any variables after this. or anything at all. IT'S IMPORTANT THAT THIS IS THE END, OK!?!?!?
+inputSpace      DS.L    64 
+
+
 
 EXIT:
     END    START        ; last line of source
@@ -980,3 +943,9 @@ EXIT:
 
 
 
+
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
