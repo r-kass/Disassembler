@@ -2,509 +2,511 @@
 * Title      : A disassembler
 * Written by : Jesse Llona, Ruby Kassala
 * Date       : I don't know the date. All I know now is assembly.
-* Description: It dissasbles things
+* Description: It disassembles things
 *-----------------------------------------------------------
     ORG     $3000 ; this is where the test program will be loaded into memory
-START: 
+START:
     JSR     SETUPOUTPUTBUFFER ; first instruction of program
     BRA     MAIN
     INCLUDE 'testProgram.X68' ; run the testProgram Subroutine
-    
+
 
     ORG     $1000 ; this is where the rest of the code will be loaded into memory
 MAIN
 * Put program code here
-    LEA         AskInputS,A1
-    JSR         moveA1ToBuffer
-    JSR         printBuffer
-    
-    
+    LEA         AskInputS,A1      ; to store user input in A1
+    JSR         moveA1ToBuffer    ; to store in buffer to print
+    JSR         printBuffer       ; to print from buffer
+
+
     ; get start location input
     LEA         inputSpace,A1
     MOVE.B      #2,D0
     TRAP        #15
-    CMP.B       #8,D1
-    BNE         not8digits
+    CMP.B       #8,D1             ; check if input is 8 digits
+    BNE         not8digits        ; branch if input is not 8 digits
 
-    MOVEA.L     A1,A3
+    MOVEA.L     A1,A3             ; copy address
     MOVEA.L     A1,A2
-    ADDA.L      D1,A2
-    JSR         ASCII2HEXP1
-    MOVEA.L     A3,A1
+    ADDA.L      D1,A2             ; add D1 data to address 2
+    JSR         ASCII2HEXP1       ; convert A2 to hex
+    MOVEA.L     A3,A1             ; convert A1 to hex
     JSR         ASCII2HEXP2
 
-    CMP.L       #$1000,D2
-    BLT         noStartOverlap
-    JSR         checkOverlap
+    CMP.L       #$1000,D2         ; compare D2 to 1000
+    BLT         noStartOverlap    ; if less then 1000, no start overlap
+    JSR         checkOverlap      ; else, check for overlap
 
-noStartOverlap:    
-    MOVE.L      D2,A5     ; start decoding at user input
-    
+; already checked for start overlap
+noStartOverlap:
+    MOVE.L      D2,A5             ; start decoding at user input
+
     LEA         AskInputE,A1
     JSR         moveA1ToBuffer
     JSR         printBuffer
-    
+
     ; get end location input
     LEA         inputSpace,A1
     MOVE.B      #2,D0
     TRAP        #15
     CMP.B       #8,D1
-    BNE         not8digits
+    BNE         not8digits        ; if ending address is not 8 digits
 
-    MOVEA.L     A1,A3
+    MOVEA.L     A1,A3             ; copy addresses
     MOVEA.L     A1,A2
-    ADDA.L      D1,A2
-    JSR         ASCII2HEXP1
+    ADDA.L      D1,A2             ; add D1 to A2
+    JSR         ASCII2HEXP1       ; convert A2 to hex
     MOVEA.L     A3,A1
-    JSR         ASCII2HEXP2
-    
-    CMP.L       #$1000,D2
+    JSR         ASCII2HEXP2       ; convert A1 to hex
+
+    CMP.L       #$1000,D2         ; if less than 1000, no end overlap
     BLT         noEndOverlap
-    JSR         checkOverlap
-    
-noEndOverlap:    
-    ANDI.L      #$0000FFFF,D2
+    JSR         checkOverlap      ; else, check for overlap
+
+noEndOverlap:
+    ANDI.L      #$0000FFFF,D2     ; store in D2 to save in address
     MOVE.L      D2,A3
     MOVE.L      A5,A2
-    ; if input is invalad, JSR to message then `MAIN`          
+
+    ; if input is invalid, JSR to message then `MAIN`
     CMP.L       A2,A3
     BLT         startNotBeforeEnd
     SUB.L       #2,A2
-    
-    LEA         newLine,A1
+
+    LEA         newLine,A1        ; to print a new line through buffer
     JSR         moveA1ToBuffer
     JSR         printBuffer
-    
+
     BRA         LOOP
 
 checkOverlap:
-    LEA      EXIT,A4
-    CMP.L    D2,A4
-    BGT      printOverlap
-    RTS      ; will using this as a subroutine cause errors if RTS isn't reached?
+    LEA         EXIT,A4
+    CMP.L       D2,A4             ; compare to find if overlap exists
+    BGT         printOverlap
+    RTS         ; will using this as a subroutine cause errors if RTS isn't reached
 
-printOverlap
-    MOVE.L  #$0,(SP)
-    LEA     overlapMsg,A1
-    JSR         moveA1ToBuffer
-    JSR         printBuffer
-    BRA     MAIN
+printOverlap:
+    MOVE.L     #$0,(SP)           ; zero stack pointer
+    LEA        overlapMsg,A1      ; print overlap using buffer
+    JSR        moveA1ToBuffer
+    JSR        printBuffer
+    BRA        MAIN
 
 startNotBeforeEnd:
-    LEA        endb4start,A1
-    JSR         moveA1ToBuffer
-    JSR         printBuffer
+    LEA        endb4start,A1      ; print end before start warning message
+    JSR        moveA1ToBuffer
+    JSR        printBuffer
     BRA        MAIN
-    
+
 not8digits:
-    LEA         wronglength,A1
+    LEA         wronglength,A1    ; print message for incorrect length
     JSR         moveA1ToBuffer
     JSR         printBuffer
     BRA         MAIN
 
-ASCII2HEXP1:      ; decodes ASCII data between A1 and A2 (not including the value at A2)
-    CMP.L       A1,A2
+ASCII2HEXP1:    ; decodes ASCII data between A1 and A2 (not including the value at A2)
+    CMP.L       A1,A2             ; if A2 is less than A1 return
     BLE         RETURN
-    
-    CMP.B       #$30,(A1)
-    BLT         InvalidHexNumber
+
+    CMP.B       #$30,(A1)         ; to convert to hex
+    BLT         InvalidHexNumber  ; if less than 30, not valid hex number
     CMP.B       #$46,(A1)
-    BGT         InvalidHexNumber
-    
+    BGT         InvalidHexNumber  ; if greater than 46, not valid as hex
+
     CMP.B       #$39,(A1)
     BGT         LT41check
 
-CONVERT:    
+CONVERT:
     CMP.B       #$39,(A1)
-    BLE         SUB0x30
+    BLE         SUB0x30           ; subtract 30 for conversion
     SUB.B       #$37,(A1)+
-    JSR         ASCII2HEXP1
+    JSR         ASCII2HEXP1       ; jump to beginning
 
 SUB0x30:
     SUB.B       #$30,(A1)+
     JSR         ASCII2HEXP1
-    
+
 RETURN:
     RTS
-    
+
 LT41check:
-    CMP.B       #$41,(A1)
+    CMP.B       #$41,(A1)         ; check if less than 41
     BLT         InvalidHexNumber
-    BRA         CONVERT
+    BRA         CONVERT           ; branch to convert if valid
 
 InvalidHexNumber:
-    LEA         InvalidHex,A1
-    JSR         moveA1ToBuffer
+    LEA         InvalidHex,A1     ; load invalid hex message
+    JSR         moveA1ToBuffer    ; print message through buffer
     JSR         printBuffer
-    BRA         MAIN    
-    
+    BRA         MAIN
+
 ASCII2HEXP2:
-    ADD.B      (A1)+,D2 
+    ADD.B      (A1)+,D2           ; add post increment of A1 to D2
     CMP.L       A1,A2
-    BLE         RETURN
-    LSL.L       #4,D2
+    BLE         RETURN            ; return if A1 less than or equal to A2
+    LSL.L       #4,D2             ; shift left four bits
     BRA         ASCII2HEXP2
-    
+
 LOOP:
     ADDA.L      #$2,A2 ; this is assuming we load user input's start location -2 into A2 the first time
-    
+
     ; check loop conditions
-    CMP         A3,A2   
-    BGE         EXIT  
-    
+    CMP         A3,A2
+    BGE         EXIT
+
     ; print the binary of the next command
     MOVE.W      (A2),D3
-    MOVE.L      D3,BIN2A_VAL
-    MOVE.L      #16,BIN2A_COUNT
-    JSR         BIN2A_CONVERT
-    
-    LEA         BIN2A_BUFFER,A1
+    MOVE.L      D3,BIN2A_VAL      ; load value to conversion
+    MOVE.L      #16,BIN2A_COUNT   ; load number of bits to subroutine
+    JSR         BIN2A_CONVERT     ; branch to subroutine
+
+    LEA         BIN2A_BUFFER,A1   ; print from subroutine
     JSR         moveA1ToBuffer
-         
+
 
     BRA         DECODE
-DECODE:          
-            ; 
+
+DECODE:
 
             ; check RTS and NOP
-            MOVE.W  (A2),D2           ; decode in D2
-            CMP.W   #$4E75,D2        ; RTS code is constant, as is NOP code
+            MOVE.W  (A2),D2          ; decode in D2
+            CMP.W   #$4E75,D2        ; RTS code is constant
             BEQ     printRts
-            CMP.W   #$4E71,D2
+            CMP.W   #$4E71,D2        ; NOP code is constant
             BEQ     printNop
-            
+
             ; check JSR
-            ANDI    #$FFC0,D2
+            ANDI    #$FFC0,D2        ; mask to compare value
             CMP.W   #$4E80,D2
             BEQ     printJsr
-            
+
             ; check Bcc
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$F000,D2
+            ANDI.W  #$F000,D2         ; mask to compare value
             CMP.W   #$6000,D2
             BEQ     printBcc
-            
+
             ; check CLR
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$FF00,D2
+            ANDI.W  #$FF00,D2         ; mask to compare value
             CMP.W   #$4200,D2
             BEQ     printClr
-            
+
             ; check DIVU
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$F1C0,D2
+            ANDI.W  #$F1C0,D2         ; mask to compare value
             CMP.W   #$80C0,D2
             BEQ     printDIVU
-            
+
             ; check MULS
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$F1C0,D2
+            ANDI.W  #$F1C0,D2         ; mask to compare value
             CMP.W   #$C1C0,D2
             BEQ     printMULS
 
             ; check LEA
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$F1C0,D2
+            ANDI.W  #$F1C0,D2         ; mask to compare value
             CMP.W   #$41C0,D2
             BEQ     printLEA
 
             ; check MOVEQ
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$F100,D2
+            ANDI.W  #$F100,D2         ; mask to compare value
             CMP.W   #$7000,D2
             BEQ     printMoveQ
-            
-            
+
+
             ; check MOVEM   example: MOVEM.L   D0-D7/A1-A4,$FFFE (or .W)
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$FB80,D2
+            ANDI.W  #$FB80,D2         ; mask to compare value
             CMP.W   #$4880,D2
             BEQ     PRINTMOVEM
 
             ; check MOVEA   movea if 00xx xxx0 01xx xxxx
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$3000,D2
+            ANDI.W  #$3000,D2         ; mask to compare value
             CMP.W   #$0000,D2         ; if size code is 0, it's not a movea
             BEQ     AFTERMOVEA
-            
+
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$C1C0,D2
+            ANDI.W  #$C1C0,D2         ; mask to compare value
             CMP.W   #$0040,D2
             BEQ     printMOVEA
 
 AFTERMOVEA
             ; check ADDI
-            MOVE.W  (A2),D2
-            ANDI.W  #$FF00,D2
+            MOVE.W  (A2),D2           ; store dereferenced address in D2
+            ANDI.W  #$FF00,D2         ; mask to compare value
             CMP.W   #$0600,D2
             BEQ     printADDI
 
             ; check MOVE move if 00xx xxxx xxxx xxxx        NEEDS TO BE AFTER MOVEA
             MOVE.W  (A2),D2           ; decode in D2
-            ANDI.W  #$3000,D2
+            ANDI.W  #$3000,D2         ; mask to compare value
             CMP.W   #$0000,D2         ; if size code is 0, it's not a move
             BEQ     AFTERMOVE
-            
+
             MOVE.W  (A2),D2
-            ANDI.W  #$C000,D2
+            ANDI.W  #$C000,D2         ; mask to compare value
             CMP.W   #$0000,D2
             BEQ     printMove
 AFTERMOVE
             ; check ADDQ
-            MOVE.W  (A2),D2
-            ANDI.W  #$F100,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F100,D2         ; mask to compare value
             CMP.W   #$5000,D2
             BEQ     printADDQ
-            
+
             ; check ADDA
-            MOVE.W  (A2),D2
-            ANDI.W  #$F0C0,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F0C0,D2         ; mask to compare value
             CMP.W   #$D0C0,D2
             BEQ     printADDA
-            
+
             ; check SUB
-            MOVE.W  (A2),D2
-            ANDI.W  #$F000,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F000,D2         ; mask to compare value
             CMP.W   #$9000,D2
             BEQ     printSUB
-            
+
             ; check ADD
-            MOVE.W  (A2),D2
-            ANDI.W  #$F000,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F000,D2         ; mask to compare value
             CMP.W   #$D000,D2
             BEQ     printADD
-            
+
             ; check ROR
-            MOVE.W  (A2),D2
-            ANDI.W  #$F118,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F118,D2         ; mask to compare value
             CMP.W   #$E018,D2
             BEQ     printROR
-            
+
             ; check ROL
-            MOVE.W  (A2),D2
-            ANDI.W  #$F118,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F118,D2         ; mask to compare value
             CMP.W   #$E118,D2
             BEQ     printROL
-            
+
             ; check ASR
-            MOVE.W  (A2),D2
-            ANDI.W  #$F118,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F118,D2         ; mask to compare value
             CMP.W   #$E000,D2
             BEQ     printASR
-            
+
             ; check ASL
-            MOVE.W  (A2),D2
-            ANDI.W  #$F118,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F118,D2         ; mask to compare value
             CMP.W   #$E100,D2
             BEQ     printASL
-            
+
             ; check LSR
-            MOVE.W  (A2),D2
-            ANDI.W  #$F118,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F118,D2         ; mask to compare value
             CMP.W   #$E008,D2
             BEQ     printLSR
-            
+
             ; check LSL
-            MOVE.W  (A2),D2
-            ANDI.W  #$F118,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F118,D2         ; mask to compare value
             CMP.W   #$E108,D2
             BEQ     printLSL
-            
+
             ; check OR
-            MOVE.W  (A2),D2
-            ANDI.W  #$F000,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F000,D2         ; mask to compare value
             CMP.W   #$8000,D2
             BEQ     printOR
-            
+
             ; check AND
-            MOVE.W  (A2),D2
-            ANDI.W  #$F000,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F000,D2         ; mask to compare value
             CMP.W   #$C000,D2
             BEQ     printAND
-            
+
             ; check CMP
-            MOVE.W  (A2),D2
-            ANDI.W  #$F000,D2
+            MOVE.W  (A2),D2           ; decode in D2
+            ANDI.W  #$F000,D2         ; mask to compare value
             CMP.W   #$B000,D2
             BEQ     printCMP
-            
-            
+
+
 printUNKNOWN:
-            LEA     UNKNOWNmsg,A1
-            JSR     MOVEA1TOBUFFER
-            JSR     PRINTBUFFER
-            BRA     LOOP            
+            LEA     UNKNOWNmsg,A1     ; load unknown message
+            JSR     MOVEA1TOBUFFER    ; load buffer
+            JSR     PRINTBUFFER       ; print
+            BRA     LOOP              ; go to start to disassemble next
 
 printUnknownSize:
-            LEA     UnknownSizemsg,A1   
-            JSR     MOVEA1TOBUFFER
-            RTS       
-      
+            LEA     UnknownSizemsg,A1 ; load unknown size message
+            JSR     MOVEA1TOBUFFER    ; load buffer
+            RTS
+
 printSize:
-            CMP.W   #$0000,D2
+            CMP.W   #$0000,D2         ; check if size is byte
             BEQ     printB
-            CMP.W   #$0001,D2
+            CMP.W   #$0001,D2         ; check if size is word
             BEQ     printW
-            CMP.W   #$0002,D2
+            CMP.W   #$0002,D2         ; check if size is long
             BEQ     printL
-            BRA     printUnknownSize
-      
+            BRA     printUnknownSize  ; else print unknown size
+
 printCMP:
-            LEA     CMPmsg,A1
-            JSR     moveA1ToBuffer
-            
+            LEA     CMPmsg,A1         ; load comparison message
+            JSR     moveA1ToBuffer    ; load A1 to buffer
+
             ; check size
             MOVE.W  (A2),D2
-            ANDI.W  #$00C0,D2
+            ANDI.W  #$00C0,D2         ; mask to find size
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
-            
+            BRA     DECODEEA          ; prompt EA file to decode EA, stored in A2
 
-            
+
+
 printAND:
-            LEA     ANDmsg,A1
-            JSR     MOVEA1TOBUFFER
-            
+            LEA     ANDmsg,A1         ; load and message
+            JSR     MOVEA1TOBUFFER    ; load A1 to buffer
+
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
+            BRA     DECODEEA          ; prompt EA
 
 
-    
+
 printOR:
-            LEA     ORmsg,A1
-            JSR     MOVEA1TOBUFFER
-            
+            LEA     ORmsg,A1          ; load or message
+            JSR     MOVEA1TOBUFFER    ; load A1 to buffer
+
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
+            BRA     DECODEEA          ; prompt EA
 
-            
+
 printLSL:
-            LEA     LSLmsg,A1
-            JSR     MOVEA1TOBUFFER
-            
+            LEA     LSLmsg,A1         ; load LSL message
+            JSR     MOVEA1TOBUFFER    ; load A1 to buffer
+
             MOVE.B  #1,D7
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     PRINTROTATIONEA
+            BRA     PRINTROTATIONEA   ; prompt rotation EA function
 
 
 printLSR:
-            LEA     LSRmsg,A1
-            JSR     MOVEA1TOBUFFER
-            
+            LEA     LSRmsg,A1         ; load LSR message
+            JSR     MOVEA1TOBUFFER    ; load A1 to buffer
+
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     PRINTROTATIONEA
+            BRA     PRINTROTATIONEA   ; prompt rotation EA function
 
 printASL:
-            LEA     ASLmsg,A1
-            JSR     MOVEA1TOBUFFER
-            
+            LEA     ASLmsg,A1         ; load ASL message
+            JSR     MOVEA1TOBUFFER    ; load A1 to buffer
+
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     PRINTROTATIONEA
+            BRA     PRINTROTATIONEA   ; prompt rotation EA function
 
 printASR:
-            LEA     ASRmsg,A1
-            JSR     MOVEA1TOBUFFER
-            
+            LEA     ASRmsg,A1         ; load ASR message
+            JSR     MOVEA1TOBUFFER    ; load A1 to buffer
+
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     PRINTROTATIONEA
+            BRA     PRINTROTATIONEA   ; prompt rotation EA function
 
 printROL:
-            LEA     ROLmsg,A1
-            JSR     MOVEA1TOBUFFER
-            
-            ; check size
-            MOVE.W  (A2),D2
-            ANDI.W  #$00C0,D2
-            LSR.W   #6,D2
-            JSR     printSize
-            BRA     PRINTROTATIONEA
-            
-printROR:
-            LEA     RORmsg,A1
-            JSR     MOVEA1TOBUFFER
-            
-            ; check size
-            ; check size
-            MOVE.W  (A2),D2
-            ANDI.W  #$00C0,D2
-            LSR.W   #6,D2
-            JSR     printSize
-            BRA     PRINTROTATIONEA
-            
-printADD:
-            LEA     ADDmsg,A1
-            JSR     MOVEA1TOBUFFER
-            
-            ; check size
-            MOVE.W  (A2),D2
-            ANDI.W  #$00C0,D2
-            LSR.W   #6,D2
-            JSR     printSize
-            BRA     DECODEEA
+            LEA     ROLmsg,A1         ; load ROL message
+            JSR     MOVEA1TOBUFFER    ; load A1 to buffer
 
-            
-            
+            ; check size
+            MOVE.W  (A2),D2
+            ANDI.W  #$00C0,D2
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     PRINTROTATIONEA   ; prompt rotation EA function
+
+printROR:
+            LEA     RORmsg,A1         ; load ROR message
+            JSR     MOVEA1TOBUFFER    ; load A1 to buffer
+
+            ; check size
+            ; check size
+            MOVE.W  (A2),D2
+            ANDI.W  #$00C0,D2
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     PRINTROTATIONEA   ; prompt rotation EA function
+
+printADD:
+            LEA     ADDmsg,A1         ; load ADD message
+            JSR     MOVEA1TOBUFFER    ; load A1 to buffer
+
+            ; check size
+            MOVE.W  (A2),D2
+            ANDI.W  #$00C0,D2
+            LSR.W   #6,D2
+            JSR     printSize
+            BRA     DECODEEA          ; prompt general EA decode function
+
+
+
 printADDI:
             LEA     ADDImsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
-            BRA     printADDISize
+            BRA     printADDISize     ; branch to print size
 
 printADDISIZE:
             CMP.W   #$0000,D2
-            BEQ     printBaddi
+            BEQ     printBaddi        ; byte length
             CMP.W   #$0001,D2
-            BEQ     printWaddi
+            BEQ     printWaddi        ; word length
             CMP.W   #$0002,D2
-            BEQ     printLaddi
+            BEQ     printLaddi        ; long length
             BRA     LOOP
-            
+
 
 printSUB:
             LEA     SUBmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
+            BRA     DECODEEA          ; prompt general EA decode function
 
 
 printADDA:
             LEA     ADDAmsg,A1
             JSR     MOVEA1TOBUFFER
-             
+
             MOVE.B  #1,D7
             ; check size
             MOVE.W  (A2),D2           ; decode in D2
@@ -514,36 +516,36 @@ printADDA:
             BEQ     PRINTADDAW
             LEA     Lmsg,A1
             JSR     MOVEA1TOBUFFER
-            
-            
-            BRA     DECODEEA
+
+
+            BRA     DECODEEA          ; prompt general EA decode function
 PRINTADDAW:
             LEA     Wmsg,A1
             JSR     MOVEA1TOBUFFER
-            BRA     DECODEEA
+            BRA     DECODEEA          ; prompt general EA decode function
 
 printADDQ:
             LEA     ADDQmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             MOVE.L  #3,D7
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
-            
+            BRA     DECODEEA          ; prompt general EA decode function
+
 printMove:
             LEA     MOVEmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             MOVE.B  #2,D7
-            
+
             ; check size
             MOVE.W  (A2),D2           ; decode in D2
             JSR     printSize2
-            BRA     DECODEEA
+            BRA     DECODEEA          ; prompt general EA decode function
 
 
 
@@ -551,7 +553,7 @@ printMove:
 printMovem:
             LEA     MOVEMmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             ; check size
             MOVE.W  (A2),D2           ; decode in D2
             LSR.W   #6,D2
@@ -560,169 +562,171 @@ printMovem:
             BEQ     printMovemW
             LEA     Lmsg,A1
             JSR     MOVEA1TOBUFFER
-            BRA     DECODEMOVEMEA
-            
+            BRA     DECODEMOVEMEA     ; prompt MOVEM EA decode function
+
 printMovemW:
-            LEA     Wmsg,A1
+            LEA     Wmsg,A1           ; move word length message to buffer
             JSR     MOVEA1TOBUFFER
-            BRA     DECODEMOVEMEA 
+            BRA     DECODEMOVEMEA     ; branch to decode MOVEM EA function
 
 printMoveq:
             LEA     MOVEQmsg,A1
             JSR     MOVEA1TOBUFFER
-            BRA     MOVEQEA
+            BRA     MOVEQEA           ; branch to decode MOVEQ EA function
 
 printLEA:
             LEA     LEAmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             MOVE.L  #1,D7
-            BRA     DECODEEA
+            BRA     DECODEEA          ; branch to decode general EA function
 
 printMuls:
             LEA     MULSmsg,A1
             JSR     MOVEA1TOBUFFER
-            
-            BRA     DECODEEA
+
+            BRA     DECODEEA          ; branch to decode general EA function
 
 printDivu:
             LEA     DIVUmsg,A1
             JSR     MOVEA1TOBUFFER
-            
-            BRA     DECODEEA
+
+            BRA     DECODEEA          ; branch to decode general EA function
 
 printClr:
             LEA     CLRmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             MOVE.B  #100,D7
             ; decode size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA
-            
+            BRA     DECODEEA          ; branch to decode general EA function
+
 printBcc:
             LEA     Bccmsg,A1
             JSR     MOVEA1TOBUFFER
-            
-            JSR     decodeCondition
-            
-            LEA     DOLLAR_SIGN,A1
+
+            JSR     decodeCondition   ; jump to subroutine
+
+            LEA     DOLLAR_SIGN,A1    ; load dollar sign to buffer to print
             JSR     MOVEA1TOBUFFER
-            
-            ADDA.L  #2,A2
-            MOVE.W  (A2),D3
-            MOVE.L  D3,BIN2A_VAL
-            MOVE.L  #16,BIN2A_COUNT
+
+            ADDA.L  #2,A2             ; increment A2 by two
+            MOVE.W  (A2),D3           ; load data in A2 to D3
+            MOVE.L  D3,BIN2A_VAL      ; convert D3
+            MOVE.L  #16,BIN2A_COUNT   ; number of bits to convert
             JSR     BIN2A_CONVERT
-            
+
             LEA     BIN2A_BUFFER,A1
             JSR     MOVEA1TOBUFFER
-         
+
             LEA     NEWLINE,A1
             JSR     MOVEA1TOBUFFER
             JSR     PRINTBUFFER
-         
-            BRA     LOOP
+
+            BRA     LOOP              ; start over to decode next
 printJsr:
             LEA     JSRmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             LEA     DOLLAR_SIGN,A1
             JSR     MOVEA1TOBUFFER
-            
-            ADDA.L  #2,A2
-            MOVE.L  (A2)+,D2
-            MOVE.L  D2,BIN2A_VAL
+
+            ADDA.L  #2,A2             ; increment address
+            MOVE.L  (A2)+,D2          ; move post-incremented into D2
+            MOVE.L  D2,BIN2A_VAL      ; store D2 to convert
             MOVE.L  #32,BIN2A_COUNT
             JSR     BIN2A_CONVERT
-            
+
             LEA     BIN2A_BUFFER,A1
             JSR     MOVEA1TOBUFFER
-            
+
             LEA     NEWLINE,A1
             JSR     MOVEA1TOBUFFER
 
-            JSR     PRINTBUFFER
-            
-            SUBA.L  #2,A2
-            
+            JSR     PRINTBUFFER       ; print from buffer
+
+            SUBA.L  #2,A2             ; subtract 2 from address 2
+
             BRA     LOOP
-         
+
 printNop:
-            LEA     NOPmsg,A1
+            LEA     NOPmsg,A1         ; load NOP message
             JSR     MOVEA1TOBUFFER
-            
-            LEA     NEWLINE,A1
+
+            LEA     NEWLINE,A1        ; load new line
             JSR     MOVEA1TOBUFFER
-            
-            JSR     PRINTBUFFER
-            BRA     LOOP
-   
+
+            JSR     PRINTBUFFER       ; print buffer
+            BRA     LOOP              ; start from top to decode next
+
 printRts:
             LEA     RTSmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             LEA     NEWLINE,A1
             JSR     MOVEA1TOBUFFER
-            
+
             JSR     PRINTBUFFER
             BRA     LOOP
 
 printMovea:
             LEA     MOVEAmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
             MOVE.L  #1,D7
             ;decode size
             MOVE.W  (A2),D2           ; decode in D2
             JSR     printSize2
-            BRA     DECODEEA
-     
+            BRA     DECODEEA          ; branch to general decode EA function
+
+; to print size
 printSize2:
             ANDI.W  #$3000,D2
-            CMP.W   #$1000,D2
+            CMP.W   #$1000,D2         ; byte
             BEQ     printB
-            CMP.W   #$3000,D2
+            CMP.W   #$3000,D2         ; word
             BEQ     printW
-            CMP.W   #$2000,D2
+            CMP.W   #$2000,D2         ; long
             BEQ     printL
-            CMP.W   #$0000,D2
+            CMP.W   #$0000,D2         ; unknown size
             BEQ     printUnknownSize
 
+; the following functions load message into A1 which is loaded into buffer
 printL:
-            LEA     Lmsg,A1
+            LEA    Lmsg,A1
             JSR    MOVEA1TOBUFFER
             RTS
-            
+
 printW:
             LEA     Wmsg,A1
             JSR     MOVEA1TOBUFFER
             RTS
-            
+
 printB:
             LEA     Bmsg,A1
             JSR     MOVEA1TOBUFFER
             RTS
-            
+
 printLaddi:
             LEA     Lmsg,A1
             JSR     MOVEA1TOBUFFER
             BRA     PRINTADDILONG
-            
+
 printWaddi:
             LEA     Wmsg,A1
             JSR     MOVEA1TOBUFFER
             BRA     PRINTADDIWORD
-            
+
 printBaddi:
             LEA     Bmsg,A1
             JSR     MOVEA1TOBUFFER
             BRA     PRINTADDIWORD
 
-
+; the following uses bit masks to compare and decode condition
 decodeCondition:
             MOVE.W  (A2),D2
             ANDI.W  #$0F00,D2
@@ -754,51 +758,51 @@ decodeCondition:
             BEQ     printGT
             CMP.W   #$0F00,D2
             BEQ     printLE
-            
-            
 
+
+; the following are loading more messages to buffer to print
 printHI:
             LEA     HImsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
 *            LEA     NEWLINE,A1
 *            MOVE.B  #14,D0
 *            TRAP    #15
-*            
+*
             RTS
 
 printLS:
             LEA     LSmsg,A1
             JSR     MOVEA1TOBUFFER
             RTS
-            
+
 printCC:
             LEA     CCmsg,A1
             JSR     MOVEA1TOBUFFER
-           
+
 
             RTS
-            
+
 printCS:
             LEA     CSmsg,A1
             JSR     MOVEA1TOBUFFER
 
 
-            
+
             RTS
 
 printNE:
             LEA     NEmsg,A1
             JSR     MOVEA1TOBUFFER
-        
 
-            
+
+
             RTS
 
 printEQ:
             LEA     EQmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
 
 
             RTS
@@ -813,65 +817,67 @@ printVC:
 printVS:
             LEA     VSmsg,A1
             JSR     MOVEA1TOBUFFER
-            
+
 
 
             RTS
-            
+
 printPL:
             LEA     PLmsg,A1
             JSR     MOVEA1TOBUFFER
-            
 
-            
+
+
             RTS
-            
+
 printMI:
             LEA     MImsg,A1
             JSR     MOVEA1TOBUFFER
-            
 
-            
+
+
             RTS
-            
+
 printGE:
             LEA     GEmsg,A1
             JSR     MOVEA1TOBUFFER
-            
 
-            
+
+
             RTS
-            
+
 printLT:
             LEA     LTmsg,A1
             JSR     MOVEA1TOBUFFER
-            
 
-            
+
+
             RTS
-            
+
 printGT:
             LEA     GTmsg,A1
             JSR     MOVEA1TOBUFFER
-            
 
-            
+
+
             RTS
-    
+
 printLE:
             LEA     LEmsg,A1
             JSR     MOVEA1TOBUFFER
-            
 
-            
-            RTS        
 
-    INCLUDE     'EAstuff.X68'    
-    INCLUDE     'outputBuffer.X68'         
+
+            RTS
+
+    INCLUDE     'EAstuff.X68'           ; include effective address file
+    INCLUDE     'outputBuffer.X68'      ; include buffer file
 
 HT              EQU     $09
 CR              EQU     $0D
 LF              EQU     $0A
+
+; the following are string and character definitions
 
 AskInputS       DC.B    'Input the 8 digit address of first command in hexadecimal:',CR,LF,0
 AskInputE       DC.B    'Input the 8 digit address of last command:',CR,LF,0
@@ -927,8 +933,8 @@ GEmsg           DC.B    'GE',HT,0
 LTmsg           DC.B    'LT',HT,0
 GTmsg           DC.B    'GT',HT,0
 LEmsg           DC.B    'LE',HT,0
-    
-inputSpace      DS.L    64 
+
+inputSpace      DS.L    64
 
 
 
