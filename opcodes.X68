@@ -8,7 +8,7 @@
 START:
     JSR     SETUPOUTPUTBUFFER ; first instruction of program
     BRA     MAIN
-    INCLUDE 'testProgram.X68' ; run the testProgram Subroutine
+    INCLUDE 'TEST_CODE.X68' ; run the testProgram Subroutine
 
 
     ORG     $1000 ; this is where the rest of the code will be loaded into memory
@@ -58,6 +58,9 @@ noStartOverlap:
     JSR         ASCII2HEXP1       ; convert A2 to hex
     MOVEA.L     A3,A1
     JSR         ASCII2HEXP2       ; convert A1 to hex
+
+    LEA         endSpace,A4
+    MOVE.L      A3,(A4)
 
     CMP.L       #$1000,D2         ; if less than 1000, no end overlap
     BLT         noEndOverlap
@@ -149,6 +152,10 @@ ASCII2HEXP2:
 
 LOOP:
     ADDA.L      #$2,A2 ; this is assuming we load user input's start location -2 into A2 the first time
+
+    LEA         endSpace,A3
+    MOVE.L      (A3),A3
+
 
     ; check loop conditions
     CMP         A3,A2
@@ -933,6 +940,8 @@ GEmsg           DC.B    'GE',HT,0
 LTmsg           DC.B    'LT',HT,0
 GTmsg           DC.B    'GT',HT,0
 LEmsg           DC.B    'LE',HT,0
+
+endSpace        DS.L    32 
 
 inputSpace      DS.L    64
 
