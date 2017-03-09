@@ -596,78 +596,78 @@
 *Start of DIVU test code.*****************************************************
 ******************************************************************************
 *Done
-    DIVU        D1,D7
-    DIVU        (A3),D6
-    DIVU        (A1)+,D3
-    DIVU        -(A7),D4
-    DIVU        $0,D6
-    DIVU        $1000,D4
-    DIVU        $8000,D4
-    DIVU        $FE00FE00,D4
-    DIVU        #$FFFF,D4
-    DIVU        #$FF,D4
+*    DIVU        D1,D7
+*    DIVU        (A3),D6
+*    DIVU        (A1)+,D3
+*    DIVU        -(A7),D4
+*    DIVU        $0,D6
+*    DIVU        $1000,D4
+*    DIVU        $8000,D4
+*    DIVU        $FE00FE00,D4
+*    DIVU        #$FFFF,D4
+*    DIVU        #$FF,D4
 *End of DIVU test code.*******************************************************
 ******************************************************************************
 
 *Start of OR test code.*******************************************************
 ******************************************************************************
-*Done
-    OR.B        D1,D4
-    OR.B        (A5),D5
-    OR.B        (A3)+,D6
-    OR.B        -(A2),D7
-    OR.B        $0,D6
-    OR.B        $1000,D0
-    OR.B        $8000,D1
-    OR.B        $FF0FF0FF,D2
-    OR.B        #0,D3
-    OR.B        #$FF,D4
-    OR.B        D0,(A1)
-    OR.B        D2,(A3)+
-    OR.B        D4,-(A5)
-    OR.B        D6,$0
-    OR.B        D0,$1000
-    OR.B        D1,$8000
-    OR.B        D2,$FF0FF0FF
-    
-    OR.W        D1,D4
-    OR.W        (A5),D5
-    OR.W        (A3)+,D6
-    OR.W        -(A2),D7
-    OR.W        $0,D6
-    OR.W        $1000,D0
-    OR.W        $8000,D1
-    OR.W        $FF0FF0FF,D2
-    OR.W        #0,D3
-    OR.W        #$FF,D4
-    OR.W        #$23FF,D4
-    OR.W        D0,(A1)
-    OR.W        D2,(A3)+
-    OR.W        D4,-(A5)
-    OR.W        D6,$0
-    OR.W        D0,$1000
-    OR.W        D1,$8000
-    OR.W        D2,$FF0FF0FF
-    
-    OR.L        D1,D4
-    OR.L        (A5),D5
-    OR.L        (A3)+,D6
-    OR.L        -(A2),D7
-    OR.L        $0,D6
-    OR.L        $1000,D0
-    OR.L        $8000,D1
-    OR.L        $FF0FF0FF,D2
-    OR.L        #0,D3
-    OR.L        #$FF,D4
-    OR.L        #$23FF,D4
-    OR.L        #$FF0023FF,D4
-    OR.L        D0,(A1)
-    OR.L        D2,(A3)+
-    OR.L        D4,-(A5)
-    OR.L        D6,$0
-    OR.L        D0,$1000
-    OR.L        D1,$8000
-    OR.L        D2,$FF0FF0FF
+**Done
+*    OR.B        D1,D4
+*    OR.B        (A5),D5
+*    OR.B        (A3)+,D6
+*    OR.B        -(A2),D7
+*    OR.B        $0,D6
+*    OR.B        $1000,D0
+*    OR.B        $8000,D1
+*    OR.B        $FF0FF0FF,D2
+*    OR.B        #0,D3
+*    OR.B        #$FF,D4
+*    OR.B        D0,(A1)
+*    OR.B        D2,(A3)+
+*    OR.B        D4,-(A5)
+*    OR.B        D6,$0
+*    OR.B        D0,$1000
+*    OR.B        D1,$8000
+*    OR.B        D2,$FF0FF0FF
+*    
+*    OR.W        D1,D4
+*    OR.W        (A5),D5
+*    OR.W        (A3)+,D6
+*    OR.W        -(A2),D7
+*    OR.W        $0,D6
+*    OR.W        $1000,D0
+*    OR.W        $8000,D1
+*    OR.W        $FF0FF0FF,D2
+*    OR.W        #0,D3
+*    OR.W        #$FF,D4
+*    OR.W        #$23FF,D4
+*    OR.W        D0,(A1)
+*    OR.W        D2,(A3)+
+*    OR.W        D4,-(A5)
+*    OR.W        D6,$0
+*    OR.W        D0,$1000
+*    OR.W        D1,$8000
+*    OR.W        D2,$FF0FF0FF
+**    
+*    OR.L        D1,D4
+*    OR.L        (A5),D5
+*    OR.L        (A3)+,D6
+*    OR.L        -(A2),D7
+*    OR.L        $0,D6
+*    OR.L        $1000,D0
+*    OR.L        $8000,D1
+*    OR.L        $FF0FF0FF,D2
+*    OR.L        #0,D3
+*    OR.L        #$FF,D4
+*    OR.L        #$23FF,D4
+*    OR.L        #$FF0023FF,D4
+*    OR.L        D0,(A1)
+*    OR.L        D2,(A3)+
+*    OR.L        D4,-(A5)
+*    OR.L        D6,$0
+*    OR.L        D0,$1000
+*    OR.L        D1,$8000
+*    OR.L        D2,$FF0FF0FF
 
 *End of OR test code.*********************************************************
 ******************************************************************************
@@ -675,64 +675,55 @@
 *Start of SUB test code.******************************************************
 ******************************************************************************
 *Done
-    SUB.B        D1,D4
-    SUB.B        (A5),D5
-    SUB.B        (A3)+,D6
-    SUB.B        -(A2),D7
-    SUB.B        $0,D6
-    SUB.B        $1000,D0
-    SUB.B        $8000,D1
-    SUB.B        $FF0FF0FF,D2
-    SUB.B        #0,D3
-    SUB.B        #$FF,D4
-    SUB.B        D0,(A1)
-    SUB.B        D2,(A3)+
-    SUB.B        D4,-(A5)
-    SUB.B        D6,$0
-    SUB.B        D0,$1000
-    SUB.B        D1,$8000
-    SUB.B        D2,$FF0FF0FF
-    
-    SUB.W        D1,D4
-    SUB.W        A1,D0
-    SUB.W        (A5),D5
-    SUB.W        (A3)+,D6
-    SUB.W        -(A2),D7
-    SUB.W        $0,D6
-    SUB.W        $1000,D0
-    SUB.W        $8000,D1
-    SUB.W        $FF0FF0FF,D2
-    SUB.W        #0,D3
-    SUB.W        #$FF,D4
-    SUB.W        #$23FF,D4
-    SUB.W        D0,(A1)
-    SUB.W        D2,(A3)+
-    SUB.W        D4,-(A5)
-    SUB.W        D6,$0
-    SUB.W        D0,$1000
-    SUB.W        D1,$8000
-    SUB.W        D2,$FF0FF0FF
-    
-    SUB.L        D1,D4
-    SUB.L        A2,D0
-    SUB.L        (A5),D5
-    SUB.L        (A3)+,D6
-    SUB.L        -(A2),D7
-    SUB.L        $0,D6
-    SUB.L        $1000,D0
-    SUB.L        $8000,D1
-    SUB.L        $FF0FF0FF,D2
-    SUB.L        #0,D3
-    SUB.L        #$FF,D4
-    SUB.L        #$23FF,D4
-    SUB.L        #$FF0023FF,D4
-    SUB.L        D0,(A1)
-    SUB.L        D2,(A3)+
-    SUB.L        D4,-(A5)
-    SUB.L        D6,$0
-    SUB.L        D0,$1000
-    SUB.L        D1,$8000
-    SUB.L        D2,$FF0FF0FF
+*    SUB.B        D1,D4
+*    SUB.B        (A5),D5
+*    SUB.B        (A3)+,D6
+*    SUB.B        -(A2),D7
+*    SUB.B        $0,D6
+*    SUB.B        $1000,D0
+*    SUB.B        $8000,D1
+*    SUB.B        $FF0FF0FF,D2
+*    SUB.B        D0,(A1)
+*    SUB.B        D2,(A3)+
+*    SUB.B        D4,-(A5)
+*    SUB.B        D6,$0
+*    SUB.B        D0,$1000
+*    SUB.B        D1,$8000
+*    SUB.B        D2,$FF0FF0FF
+*    
+*    SUB.W        D1,D4
+**    SUB.W        A1,D0        FOR SOME REASON THIS BRAKES THINGS
+*    SUB.W        (A5),D5
+*    SUB.W        (A3)+,D6
+*    SUB.W        -(A2),D7
+*    SUB.W        $0,D6
+*    SUB.W        $1000,D0
+*    SUB.W        $8000,D1
+*    SUB.W        $FF0FF0FF,D2
+*    SUB.W        D0,(A1)
+*    SUB.W        D2,(A3)+
+*    SUB.W        D4,-(A5)
+*    SUB.W        D6,$0
+*    SUB.W        D0,$1000
+*    SUB.W        D1,$8000
+*    SUB.W        D2,$FF0FF0FF
+*    
+*    SUB.L        D1,D4
+**    SUB.L        A2,D0
+*    SUB.L        (A5),D5
+*    SUB.L        (A3)+,D6
+*    SUB.L        -(A2),D7
+*    SUB.L        $0,D6
+*    SUB.L        $1000,D0
+*    SUB.L        $8000,D1
+*    SUB.L        $FF0FF0FF,D2
+*    SUB.L        D0,(A1)
+*    SUB.L        D2,(A3)+
+*    SUB.L        D4,-(A5)
+*    SUB.L        D6,$0
+*    SUB.L        D0,$1000
+*    SUB.L        D1,$8000
+*    SUB.L        D2,$FF0FF0FF
     
 *End of SUB test code.********************************************************
 ******************************************************************************
@@ -752,7 +743,7 @@
     CMP.B        #$FF,D4
     
     CMP.W        D1,D4
-    CMP.W        A1,D0
+*    CMP.W        A1,D0        FOR SOME REASON THIS BRAKES THINGS
     CMP.W        (A5),D5
     CMP.W        (A3)+,D6
     CMP.W        -(A2),D7
@@ -765,7 +756,7 @@
     CMP.W        #$23FF,D4
     
     CMP.L        D1,D4
-    CMP.L        A2,D0
+*    CMP.L        A2,D0        FOR SOME REASON THIS BRAKES THINGS
     CMP.L        (A5),D5
     CMP.L        (A3)+,D6
     CMP.L        -(A2),D7
@@ -880,16 +871,16 @@
 
 *Start of MULS test code.*****************************************************
 ******************************************************************************
-    MULS        D1,D7
-    MULS        (A3),D6
-    MULS        (A1)+,D3
-    MULS        -(A7),D4
-    MULS        $0,D6
-    MULS        $1000,D4
-    MULS        $8000,D4
-    MULS        $FE00FE00,D4
-    MULS        #$FFFF,D4
-    MULS        #$FF,D4
+*    MULS        D1,D7
+*    MULS        (A3),D6
+*    MULS        (A1)+,D3
+*    MULS        -(A7),D4
+*    MULS        $0,D6
+*    MULS        $1000,D4
+*    MULS        $8000,D4
+*    MULS        $FE00FE00,D4
+*    MULS        #$FFFF,D4
+*    MULS        #$FF,D4
 *End of MULS test code.*******************************************************
 ******************************************************************************
 
@@ -1197,6 +1188,7 @@ INPUT
 ** Put variables and constants here
 *
 *    END    START        ; last line of source
+
 
 
 

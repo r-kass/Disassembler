@@ -67,6 +67,8 @@ returnBuf
     move.b  #0,(A0)
     lea     outputPointer,A1
     move.l  A0,(A1)
+    ;move.l  #0,A0
+    ;move.l  #0,A1
     movem.l (A7)+,D0-D7/A0/A2-A6
     rts   
     
@@ -95,6 +97,8 @@ outputPointer   DS.L    32
 *msg2            DC.B    ' world',CR,LF,0
 *msg3            DC.B    'gb',0
 *msg4            DC.B    ' wrld',CR,LF,0
+
+
 
 
 

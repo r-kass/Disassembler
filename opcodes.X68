@@ -156,6 +156,7 @@ ASCII2HEXP2:
     BRA         ASCII2HEXP2
 
 LOOP:
+    CLR.L       D5
     MOVE.B      #0,RETURNATEND
     LEA         startSpace,A2
     ADD.L       #2,(A2)
@@ -377,7 +378,34 @@ printCMP:
             ANDI.W  #$00C0,D2         ; mask to find size
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA          ; prompt EA file to decode EA, stored in A2
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$0100,D2
+            CMP.W   #0,D2
+            BNE     printReverse
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$003F,D2
+            JSR     GETLHS
+            
+            LEA     COMMA,A1
+            JSR     MOVEA1TOBUFFER
+            
+            
+            MOVE.W  (A2),D2
+            ROL.W   #7,D2
+            ANDI.W  #7,D2
+            MOVE.W  #0000,D3
+            ADD.W   D2,D3
+            MOVE.W  D3,D2
+            
+            JSR     GETLHS
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR      PRINTBUFFER
+            BRA      LOOP
 
 
 
@@ -390,21 +418,97 @@ printAND:
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA          ; prompt EA
-
-
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$0100,D2
+            CMP.W   #0,D2
+            BNE     printReverse
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$003F,D2
+            JSR     GETLHS
+            
+            LEA     COMMA,A1
+            JSR     MOVEA1TOBUFFER
+            
+            
+            MOVE.W  (A2),D2
+            ROL.W   #7,D2
+            ANDI.W  #7,D2
+            MOVE.W  #0000,D3
+            ADD.W   D2,D3
+            MOVE.W  D3,D2
+            
+            JSR     GETLHS
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR      PRINTBUFFER
+            BRA      LOOP
+         
 
 printOR:
             LEA     ORmsg,A1          ; load or message
             JSR     MOVEA1TOBUFFER    ; load A1 to buffer
-
+            
             ; check size
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA          ; prompt EA
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$0100,D2
+            CMP.W   #0,D2
+            BNE     printReverse
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$003F,D2
+            JSR     GETLHS
+            
+            LEA     COMMA,A1
+            JSR     MOVEA1TOBUFFER
+            
+            
+            MOVE.W  (A2),D2
+            ROL.W   #7,D2
+            ANDI.W  #7,D2
+            MOVE.W  #0000,D3
+            ADD.W   D2,D3
+            MOVE.W  D3,D2
+            
+            JSR     GETLHS
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR      PRINTBUFFER
+            BRA      LOOP
 
+printReverse:
+                        
+            MOVE.W  (A2),D2
+            ROL.W   #7,D2
+            ANDI.W  #7,D2
+            MOVE.W  #0000,D3
+            ADD.W   D2,D3
+            MOVE.W  D3,D2
+            
+            JSR     GETLHS
+            
+            LEA     COMMA,A1
+            JSR     MOVEA1TOBUFFER
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$003F,D2
+            JSR     GETLHS
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR      PRINTBUFFER
+            BRA      LOOP
 
 printLSL:
             LEA     LSLmsg,A1         ; load LSL message
@@ -484,7 +588,34 @@ printADD:
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA          ; prompt general EA decode function
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$0100,D2
+            CMP.W   #0,D2
+            BNE     printReverse
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$003F,D2
+            JSR     GETLHS
+            
+            LEA     COMMA,A1
+            JSR     MOVEA1TOBUFFER
+            
+            
+            MOVE.W  (A2),D2
+            ROL.W   #7,D2
+            ANDI.W  #7,D2
+            MOVE.W  #0000,D3
+            ADD.W   D2,D3
+            MOVE.W  D3,D2
+            
+            JSR     GETLHS
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR      PRINTBUFFER
+            BRA      LOOP
 
 
 
@@ -509,6 +640,12 @@ printADDISIZE:
 
 
 printSUB:
+
+            MOVE.W  (A2),D2
+            ANDI.W  #$00C0,D2
+            CMP.W   #$00C0,D2
+            BEQ     printUNKNOWN
+
             LEA     SUBmsg,A1
             JSR     MOVEA1TOBUFFER
 
@@ -517,7 +654,35 @@ printSUB:
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
             JSR     printSize
-            BRA     DECODEEA          ; prompt general EA decode function
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$0100,D2
+            CMP.W   #0,D2
+            BNE     printReverse
+            
+            MOVE.W  (A2),D2
+            ANDI.W  #$003F,D2
+            JSR     GETLHS
+            
+            LEA     COMMA,A1
+            JSR     MOVEA1TOBUFFER
+            
+            
+            MOVE.W  (A2),D2
+            ROL.W   #7,D2
+            ANDI.W  #7,D2
+            MOVE.W  #0000,D3
+            ADD.W   D2,D3
+            MOVE.W  D3,D2
+            
+            JSR     GETLHS
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR      PRINTBUFFER
+            BRA      LOOP
+
 
 
 printADDA:
@@ -601,13 +766,14 @@ printLEA:
 printMuls:
             LEA     MULSmsg,A1
             JSR     MOVEA1TOBUFFER
-
+            MOVE.L  #4,D7
             BRA     DECODEEA          ; branch to decode general EA function
 
 printDivu:
             LEA     DIVUmsg,A1
             JSR     MOVEA1TOBUFFER
-
+            
+            MOVE.L  #4,D7
             BRA     DECODEEA          ; branch to decode general EA function
 
 printClr:
@@ -697,6 +863,7 @@ printSize2:
 
 ; the following functions load message into A1 which is loaded into buffer
 printL:
+            MOVE.L #2,D5
             LEA    Lmsg,A1
             JSR    MOVEA1TOBUFFER
             RTS
@@ -949,6 +1116,8 @@ inputSpace      DS.L    64
 
 EXIT:
     END    START        ; last line of source
+
+
 
 
 
