@@ -36,7 +36,7 @@
     MOVE.L #$48F9101E, TESTLOC      ; temp EA code - SHOULD PRINT: A1
     LEA     TESTLOC, A2       ; load the address pointer
     MOVEA.L #$01000000,A7   ; init the stack pointer
-    JSR     MOVEMEA
+   ; JSR     MOVEMEA
     SIMHALT
     
 TESTLOC DS.L   1           ; store the EA code here
@@ -1190,106 +1190,139 @@ MOVEMSET            DS.B 2 ; 0 if set bits, else 1
 *-----------------------------SPECIAL SNOWFLAKES-------------------------------*
 
 *-----------------------------MOVEM SUBROUTINES-------------------------------*
-
+FLIPA2WORD:
+        MOVEM.L D0-D7,-(A7)
+        MOVE.W  (A2),D2
+        MOVE.L  #0,D3
+        MOVE.L  #0,D0
+FLIPA2WORDLOOP:
+        LSR.W   #1,D2
+        BCS     ADDTOD3FORFLIP
+CONTINUEFLIPA2WORDLOOP:        
+        LSL.W   #1,D3
+        
+        ADD.L   #1,D0
+        CMP.L   #$F,D0
+        BLT     FLIPA2WORDLOOP
+        
+        MOVE.W  D3,(A2)
+        
+        MOVEM.L (A7)+,D0-D7
+        RTS
+        
+ADDTOD3FORFLIP:
+        ADD.W   #1,D3
+        BRA      CONTINUEFLIPA2WORDLOOP       
+        
 DECODEMOVEMEA:
+        ADD.L   #2,startSpace
+        MOVEM.L D0-D7/A1/A3-A6,-(A7)
+        MOVE.W   (A2),D3     ; opcode
+        ANDI.W   #$0400, D3
+        CMPI.W   #$0, D3
+        BEQ      MOVEMREGTOMEM
+        BRA      MOVEMMEMTOREG
 
-        ;MOVEM.L D0-D7/A1/A3-A6,-(A7)
-       MOVEM    A2,-(A7)
-       LEA      startSpace,A2
-       ADD.L    #2,(A2)
-       MOVEM    (A7)+,A2 
-       MOVE.B      #1,RETURNATEND
-       LEA      MOVEMSET,A5
-       MOVE.B   #0,(A5)
-       ;MOVE.B  #0,MOVEMMEMCOUNT
-       ;MOVE.B  #0,MOVEMCOUNT
-       ;MOVE.B  #0,MOVEMDIRECTION      
-       
-       MOVE.W   (A2)+,D3     ; opcode
-       ANDI.W   #$0400, D3
-       CMPI.W   #$0, D3
-       BEQ      MOVEMEA
-       ;MOVE.B   #$1,MOVEMDIRECTION
-       ;BRA      MOVEMEAMEM
-      
-MOVEMEAMEM:
-       SUB.L   #2,A2
-       move.b  #101,D7
-       MOVE.W  (A2),D3
-       JSR     DECODEMOVEMEA
-       JSR     MOVEA1TOBUFFER
-       BRA     EAEXIT 
-*       LEA     COMMA,A1
+MOVEMREGTOMEM
+        ADD.L    #2,A2
+        JSR      FLIPA2WORD
+        JSR      MOVEMEAREGS  
+        SUB.L    #2,A2
+        
+        LEA      COMMA,A1
+        JSR      MOVEA1TOBUFFER
+        
+        SUB.L    #2,A2
+        MOVE.W   (A2),D2
+        JSR      MOVEMEAMEMORY
+        BRA      EAEXIT
+
+MOVEMMEMTOREG   
+
+        MOVE.W   (A2),D2
+        JSR      MOVEMEAMEMORY
+        
+        LEA      COMMA,A1
+        JSR      MOVEA1TOBUFFER
+        
+        ADD.L   #2,A2
+        JSR      MOVEMEAREGS  
+
+    
+        BRA      EAEXIT     
+*       MOVE.B      #1,RETURNATEND
+*       LEA      MOVEMSET,A5
+*       MOVE.B   #0,(A5)
+*       ;MOVE.B  #0,MOVEMMEMCOUNT
+*       ;MOVE.B  #0,MOVEMCOUNT
+*       ;MOVE.B  #0,MOVEMDIRECTION      
+*       
+*       MOVE.W   (A2)+,D3     ; opcode
+*       ANDI.W   #$0400, D3
+*       CMPI.W   #$0, D3
+*       BEQ      MOVEMEA
+*       ;MOVE.B   #$1,MOVEMDIRECTION
+*       ;BRA      MOVEMEAMEM
+*      
+MOVEMEAMEMORY:
+        JSR     GETLHS
+        RTS
+*       SUB.L   #2,A2
+*       move.b  #101,D7
+*       MOVE.W  (A2),D3
+*       JSR     DECODEMOVEMEA
 *       JSR     MOVEA1TOBUFFER
-*              
-       SUB.W    #4,A2
-       MOVE.W   (A2),D3     ; opcode
-       ANDI.W   #$0400, D3
-       CMPI.W   #$0, D3
-       BEQ      MOVEMEXIT
-       
-       LEA      COMMA,A1
-       JSR     MOVEA1TOBUFFER
-       
-MOVEMEA:
-       MOVE.L  startSpace,A2
+*       BRA     EAEXIT 
+**       LEA     COMMA,A1
+**       JSR     MOVEA1TOBUFFER
+**              
+*       SUB.W    #4,A2
+*       MOVE.W   (A2),D3     ; opcode
+*       ANDI.W   #$0400, D3
+*       CMPI.W   #$0, D3
+*       BEQ      MOVEMEXIT
+*       
+*       LEA      COMMA,A1
+*       JSR     MOVEA1TOBUFFER
+*       
+MOVEMEAREGS:
+*       MOVE.L  startSpace,A2
 
        CLR.W   D7
        MOVE.W  (A2),D5   ; get copy of all 16 bits
        ADD.L   #2,A2  
        MOVE.L  #$0, D4   ; counter for loop
-       ;CMPI.W  #$1, MOVEMCOUNT
-
+*
 MOVEMEALOOP:
-
+*
        ADD.L   #$1, D4    ; increment counter
-       CMPI.L  #$F, D4    ; break loop here
-       BEQ     EXITMOVEMEALOOP
-         
+       CMPI.L  #$10, D4    ; break loop here
+       BGT     EXITMOVEMEALOOP
+*         
        LSR.W   #1, D5
-       BCS     PRINTMOVEMEA               ;branch if a 1 is shifted out
+       BCS     PRINTMOVEMEAREG               ;branch if a 1 is shifted out
        BRA     MOVEMEALOOP
-
+*
 EXITMOVEMEALOOP:
-       SUB.W    #4,A2
-       MOVE.W   (A2)+,D3     ; opcode
-       ANDI.W   #$0400, D3
-       CMPI.W   #$0, D3
-       BNE      MOVEMEXIT
+        RTS
 
-       
-       LEA      COMMA,A1
-       JSR     MOVEA1TOBUFFER
-       BRA      MOVEMEAMEM
-
-;MOVEMCOMMAM
-       ;CMP.B    #0, MOVEMCOUNT
-       ;BEQ      MOVEMEXIT
-       ;MOVE.B   #1, MOVEMCOUNT
-       ;LEA      COMMA,A1
-       ;JSR     MOVEA1TOBUFFER
-       ;BRA      MOVEMEAMEM
-       
-;MOVEMCOMMAR
-       ;CMP.B    #0, MOVEMMEMCOUNT
-       ;BEQ      MOVEMEXIT
-       ;MOVE.B   #1, MOVEMMEMCOUNT
-       ;LEA      COMMA,A1
-       ;JSR     MOVEA1TOBUFFER
-       ;BRA      MOVEMEA       
-       
-
-PRINTMOVEMEA:
+PRINTMOVEMEAREG:
       CMPI.B   #1, MOVEMSET
       BEQ      PRINTSLASH
-      
+*      
 PRINTMOVEM2:
       MOVE.B   #1, MOVEMSET
       CMPI.L   #8, D4
 
       BLE      PRINTMOVEMD 
       BRA      PRINTMOVEMA
-      
+  
+PRINTSLASH
+
+      LEA     SLASH, A1
+      JSR     MOVEA1TOBUFFER
+      BRA     PRINTMOVEM2
+    
 PRINTMOVEMD:
       LEA      DATA_REG, A1
       JSR     MOVEA1TOBUFFER
@@ -1306,8 +1339,8 @@ PRINTMOVEMD:
 
 
       BRA      MOVEMEALOOP
-
-
+*
+*
 PRINTMOVEMA:
       LEA     ADD_REG, A1
 
@@ -1325,26 +1358,22 @@ PRINTMOVEMA:
 
 
       BRA MOVEMEALOOP
+*
 
-PRINTSLASH
-
-      LEA     SLASH, A1
-      JSR     MOVEA1TOBUFFER
-      BRA     PRINTMOVEM2
-
-MOVEMEXIT:
-      
-      
-      LEA     NEWLINE,A1
-      JSR     MOVEA1TOBUFFER
-      JSR     PRINTBUFFER
-        
-      ADDA.L  #4,A2
-      BRA     LOOP
-      
-DECODEMOVEMTHINGY:
-      SUB.L   #4,A2
-      NOP
+*
+*MOVEMEXIT:
+*      
+*      
+*      LEA     NEWLINE,A1
+*      JSR     MOVEA1TOBUFFER
+*      JSR     PRINTBUFFER
+*        
+*      ADDA.L  #4,A2
+*      BRA     LOOP
+*      
+*DECODEMOVEMTHINGY:
+*      SUB.L   #4,A2
+*      NOP
 *-----------------------------END MOVEM SUBROUTINES-------------------------------*
       
 MOVEEA: 
@@ -1597,11 +1626,12 @@ BIGNUM
         BRA      BIN2A_LOOP2
 
 
-GETLHS:
+GETLHS: ; ASSUMES OPCODE IS IN D2
        MOVEM.L  D0-D7/A0-A6, -(A7)
        MOVE.W   D2,D3
        LSR.W    #3,D3       ; Last 3 bits of D3 are mode
        ANDI.L   #$0007,D2   ; Last 3 bits of D2 are reg
+       ANDI.L   #$0007,D3
        
        CMP.W    #%000,D3
        BEQ      PRINTD       
@@ -1836,6 +1866,7 @@ LF                  EQU         $0A
   ;  END    START        ; last line of source
 *~Font name~Courier New~
   
+
 
 
 

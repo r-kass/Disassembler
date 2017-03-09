@@ -1095,10 +1095,32 @@ FINISHED:
             LEA     FINISHEDMSG1,A1
             JSR     MOVEA1TOBUFFER
             
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+ASKGOAGAIN            
+            LEA     goAgain,A1
+            JSR     MOVEA1TOBUFFER
+            
             JSR     PRINTBUFFER
-            BRA     EXIT
-
-
+            
+            LEA     inputSpace,A1
+            MOVE.B  #2,D0
+            TRAP    #15
+           
+            CMP.B   #$79,(A1)
+            BEQ     MAIN
+            CMP.B   #$59,(A1)
+            BEQ     MAIN
+            CMP.B   #$6E,(A1)
+            BEQ     EXIT
+            CMP.B   #$4E,(A1)
+            BEQ     EXIT
+            
+           
+            BRA     ASKGOAGAIN            
                INCLUDE     'EAstuff.X68'           ; include effective address file
                INCLUDE     'outputBuffer.X68'      ; include buffer file
       
@@ -1189,7 +1211,7 @@ GEmsg           DC.B    'GE  ',HT,HT,0
 LTmsg           DC.B    'LT  ',HT,HT,0
 GTmsg           DC.B    'GT  ',HT,HT,0
 LEmsg           DC.B    'LE  ',HT,HT,0
-
+GoAgain         DC.B    'Would you like to go again? (y/n)',CR,LF,0
 
 FINISHEDMSG1     DC.B    '*-----------------------------FINISHED!!!-------------------------------*',CR,LF,0
 FINISHEDMSG2     DC.B    'CONGRADULATIONS, YOU HAVE SUCCESFULLY SURVIVED WATCHING OUR DISSASEMBLER',CR,LF,'(AND ALSO HARDWARE, THATS A BIGGER DEAL) ENJOY SOME IMAGINARY COOKIES!!!!',CR,LF,0
@@ -1206,6 +1228,7 @@ linesPrinted    DS.L    32
     
 EXIT:
     END    START        ; last line of source
+
 
 
 
