@@ -1184,9 +1184,8 @@ DONEREGS:
       BRA       EAEXIT
 
 EAERROR:
-      LEA     EAERRORMSG, A1
-      JSR     MOVEA1TOBUFFER
-      RTS   
+      BRA       printUNKNOWN
+MOVEMSET            DS.B 2 ; 0 if set bits, else 1
 
 *-----------------------------SPECIAL SNOWFLAKES-------------------------------*
 
@@ -1199,8 +1198,6 @@ DECODEMOVEMEA:
        LEA      startSpace,A2
        ADD.L    #2,(A2)
        MOVEM    (A7)+,A2 
-MOVEMSET            DS.B 0 ; 0 if set bits, else 1
-       
        MOVE.B      #1,RETURNATEND
        LEA      MOVEMSET,A5
        MOVE.B   #0,(A5)
@@ -1214,12 +1211,14 @@ MOVEMSET            DS.B 0 ; 0 if set bits, else 1
        BEQ      MOVEMEA
        ;MOVE.B   #$1,MOVEMDIRECTION
        ;BRA      MOVEMEAMEM
-        
+      
 MOVEMEAMEM:
-       ADD.L   #2,A2
+       SUB.L   #2,A2
        move.b  #101,D7
-       JSR     DECODEEA
-        
+       MOVE.W  (A2),D3
+       JSR     DECODEMOVEMEA
+       JSR     MOVEA1TOBUFFER
+       BRA     EAEXIT 
 *       LEA     COMMA,A1
 *       JSR     MOVEA1TOBUFFER
 *              
@@ -1234,10 +1233,10 @@ MOVEMEAMEM:
        
 MOVEMEA:
        MOVE.L  startSpace,A2
-       ADD.L   #2,A2  
+
        CLR.W   D7
        MOVE.W  (A2),D5   ; get copy of all 16 bits
-
+       ADD.L   #2,A2  
        MOVE.L  #$0, D4   ; counter for loop
        ;CMPI.W  #$1, MOVEMCOUNT
 
@@ -1342,6 +1341,10 @@ MOVEMEXIT:
         
       ADDA.L  #4,A2
       BRA     LOOP
+      
+DECODEMOVEMTHINGY:
+      SUB.L   #4,A2
+      NOP
 *-----------------------------END MOVEM SUBROUTINES-------------------------------*
       
 MOVEEA: 
@@ -1603,7 +1606,7 @@ GETLHS:
        CMP.W    #%000,D3
        BEQ      PRINTD       
        CMP.W    #%001,D3
-       BEQ      PRINTA
+       BEQ      PRINTAD
        CMP.W    #%010,D3
        BEQ      PRINTADDRESS
        CMP.W    #%011,D3
@@ -1612,6 +1615,7 @@ GETLHS:
        BEQ      PRINTADDRESS_W_PREDEC
        CMP.W    #%111,D3
        BEQ      ABSORIMD
+       BRA      EAFAILED
             
 PRINTD:
        LEA      DATA_REG,A1
@@ -1703,7 +1707,7 @@ PRINTADDRESS_W_PREDEC:
        
        LEA      PARENTHESIS_2,A1
        JSR      MOVEA1TOBUFFER 
-
+        
        MOVEM.L  (A7)+, D0-D7/A0-A6
        RTS
 
@@ -1714,7 +1718,7 @@ ABSORIMD:
        BEQ      ABS001
        CMP.W    #%100,D2
        BEQ      ABS100
-       
+       BRA      EAFAILED
 ABS000
        MOVEM    A2,-(A7)
        LEA      startSpace,A2
@@ -1722,7 +1726,7 @@ ABS000
        MOVEM    (A7)+,A2
 
        ;ADD.L    D5,A2
-       ;ADD.L    #2,A2
+       ADD.L    #2,A2
        LEA      DOLLAR_SIGN,A1
        JSR      MOVEA1TOBUFFER
 
@@ -1759,8 +1763,8 @@ ABS001
        RTS
 ABS100:
        MOVEM    D1/A2,-(A7)
-       MOVE.B   #2,D1
-       ADD.B    D5,D1
+       MOVE.L   #2,D1
+       ADD.L    D5,D1
        LEA      startSpace,A2
        ADD.L    D1,(A2)
        MOVEM    (A7)+,D1/A2
@@ -1795,6 +1799,15 @@ MAKECOUNT16
        MOVE.L   #16,BIN2A_COUNT
        RTS
 
+EAFAILED:
+       JSR      SETUPOUTPUTBUFFER
+    
+*       LEA      EAERRORMSG,A1
+*       JSR      MOVEA1TOBUFFER
+       
+       JSR      PRINTBUFFER
+       MOVEM.L  (A7)+, D0-D7/A0-A6
+       BRA      LOOP
 *------------------------------------------------------------------------
 
 *---------------------- Symbols ----------------------------
@@ -1804,22 +1817,18 @@ LF                  EQU         $0A
 ;MOVEMMEMCOUNT       DS.B 0 ; 0 if memory is already printed, otherwise 1
 ;MOVEMCOUNT          DS.B 0 ; 0 if other stuff is already printed, otherwise 1
 ;MOVEMDIRECTION      DS.B 0
-
-NEWLINE             DC.B        CR,LF,0
-PARENTHESIS_1       DC.B        '(', 0
-PARENTHESIS_2       DC.B        ')', 0
-PLUS_SIGN           DC.B        '+', 0
-MINUS_SIGN          DC.B        '-', 0
-COMMA               DC.B        ',', 0
-DOLLAR_SIGN         DC.B        '$', 0
-POUND               DC.B        '#', 0
-SLASH               DC.B        '/', 0
-
-DATA_REG            DC.B        'D', 0
-ADD_REG             DC.B        'A', 0
-
-
-EAERRORMSG          DC.B	    'Invalid Mode',0
+*NEWLINE             DC.B        CR,LF,0
+*PARENTHESIS_1       DC.B        '(', 0
+*PARENTHESIS_2       DC.B        ')', 0
+*PLUS_SIGN           DC.B        '+', 0
+*MINUS_SIGN          DC.B        '-', 0
+*COMMA               DC.B        ',', 0
+*DOLLAR_SIGN         DC.B        '$', 0
+*POUND               DC.B        '#', 0
+*SLASH               DC.B        '/', 0
+*
+*DATA_REG            DC.B        'D', 0
+*ADD_REG             DC.B        'A', 0
 
 
 * Put variables and constants here
@@ -1827,6 +1836,18 @@ EAERRORMSG          DC.B	    'Invalid Mode',0
   ;  END    START        ; last line of source
 *~Font name~Courier New~
   
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

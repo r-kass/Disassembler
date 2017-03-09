@@ -35,12 +35,36 @@
 *    
 *    jsr     printBuffer
 *    BRA     EXIT
+
+pausprinting:
+    move.l  #0,linesPrinted
+    lea     pressEnter,A1
+    jsr     moveA1tobuffer
+    jsr     printbuffer
+    
+    
+    move.b  #13,d0
+    Trap    #15
+    
+    move.b  #2,D0
+    Trap    #15
+    
+
+    bra     continuePrinting
+
 printBuffer:
     movem.l D0-D7/A0/A2-A6,-(A7)
+    
+
+    add.l   #1,linesPrinted 
     lea     outputBuffer,A1
     move.b  #14,D0
     Trap    #15
     jsr     setupOutputBuffer
+    
+    cmp.l   #30,linesPrinted
+    beq     pausprinting  
+continuePrinting    
     movem.l (A7)+,D0-D7/A0/A2-A6
     rts
 
@@ -88,15 +112,15 @@ returnBuf
     SIMHALT             ; halt simulator
 
 * Put variables and constants here 
-CR              EQU     $0D
-LF              EQU     $0A
 
-outputBuffer    DS.L    256
-outputPointer   DS.L    32
 *msg             DC.B    'hello',0
 *msg2            DC.B    ' world',CR,LF,0
 *msg3            DC.B    'gb',0
 *msg4            DC.B    ' wrld',CR,LF,0
+
+
+
+
 
 
 

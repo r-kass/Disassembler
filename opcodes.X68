@@ -6,20 +6,30 @@
 *-----------------------------------------------------------
     ORG     $7000 ; this is where the test program will be loaded into memory
 START:
+    LEA     WELCOMEMESSAGEP1,A1
+    MOVE.B  #14,D0
+    TRAP    #15
+    
+    LEA     WELCOMEMESSAGEP2,A1
+    MOVE.B  #14,D0
+    TRAP    #15
+    
     JSR     SETUPOUTPUTBUFFER ; first instruction of program
     BRA     MAIN
-    INCLUDE 'TEST_CODE.X68' ; run the testProgram Subroutine
-
-
+    
+   INCLUDE     'demo_test.X68' ; run the testProgram Subroutine
+     
     ORG     $1000 ; this is where the rest of the code will be loaded into memory
+ 
+
 MAIN
-   
+    MOVE.L      #0,LINESPRINTED
 * Put program code here
     LEA         AskInputS,A1      ; to store user input in A1
     JSR         moveA1ToBuffer    ; to store in buffer to print
     JSR         printBuffer       ; to print from buffer
 
-
+    
     ; get start location input
     LEA         inputSpace,A1
     MOVE.B      #2,D0
@@ -161,26 +171,34 @@ LOOP:
     LEA         startSpace,A2
     ADD.L       #2,(A2)
     MOVE.L      (A2),A2
-    ;ADD.L       #2,A2 ; this is assuming we load user input's start location -2 into A2 the first time
-    ;MOVE.L      (A2),A2
-    
+        
     LEA         endSpace,A3
     MOVE.L      (A3),A3
 
 
     ; check loop conditions
     CMP         A3,A2
-    BGE         EXIT
+    BGE         FINISHED
 
-    ; print the binary of the next command
-    MOVE.W      (A2),D3
-    MOVE.L      D3,BIN2A_VAL      ; load value to conversion
-    MOVE.L      #16,BIN2A_COUNT   ; load number of bits to subroutine
-    JSR         BIN2A_CONVERT     ; branch to subroutine
-
-    LEA         BIN2A_BUFFER,A1   ; print from subroutine
-    JSR         moveA1ToBuffer
-
+    ; print the memory of the next command
+    MOVE.L      A2,D3
+    MOVE.L      D3,BIN2A_VAL
+    MOVE.L      #32,BIN2A_COUNT
+    JSR         BIN2A_CONVERT
+    LEA         BIN2A_BUFFER,A1
+    JSR         MOVEA1TOBUFFER
+    LEA         TABmsg,A1
+    JSR         MOVEA1TOBUFFER      
+    
+    
+*    MOVE.W      (A2),D3
+*    MOVE.L      D3,BIN2A_VAL      ; load value to conversion
+*    MOVE.L      #16,BIN2A_COUNT   ; load number of bits to subroutine
+*    JSR         BIN2A_CONVERT     ; branch to subroutine
+*
+*    LEA         BIN2A_BUFFER,A1   ; print from subroutine
+*    JSR         moveA1ToBuffer
+*
 
     BRA         DECODE
 
@@ -350,15 +368,38 @@ AFTERMOVE
 
 
 printUNKNOWN:
-            LEA     UNKNOWNmsg,A1     ; load unknown message
-            JSR     MOVEA1TOBUFFER    ; load buffer
-            JSR     PRINTBUFFER       ; print
-            BRA     LOOP              ; go to start to disassemble next
-
+            
 printUnknownSize:
-            LEA     UnknownSizemsg,A1 ; load unknown size message
+            JSR     setupOutputBuffer
+
+            MOVE.L      A2,D3
+            MOVE.L      D3,BIN2A_VAL
+            MOVE.L      #32,BIN2A_COUNT
+            JSR         BIN2A_CONVERT
+            LEA         BIN2A_BUFFER,A1
+            JSR         MOVEA1TOBUFFER
+            LEA         TABmsg,A1
+            JSR         MOVEA1TOBUFFER      
+    
+
+            LEA     DATA,A1 ; load unknown size message
             JSR     MOVEA1TOBUFFER    ; load buffer
-            RTS
+            
+            
+            MOVE.W      (A2),D3
+            MOVE.L      D3,BIN2A_VAL      ; load value to conversion
+            MOVE.L      #16,BIN2A_COUNT   ; load number of bits to subroutine
+            JSR         BIN2A_CONVERT     ; branch to subroutine
+
+            LEA         BIN2A_BUFFER,A1   ; print from subroutine
+            JSR         moveA1ToBuffer
+
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER            
+ 
+            JSR     PRINTBUFFER          
+            
+            BRA     LOOP
 
 printSize:
             CMP.W   #$0000,D2         ; check if size is byte
@@ -833,8 +874,8 @@ printRts:
             LEA     RTSmsg,A1
             JSR     MOVEA1TOBUFFER
 
-            LEA     NEWLINE,A1
-            JSR     MOVEA1TOBUFFER
+*            LEA     NEWLINE,A1
+*            JSR     MOVEA1TOBUFFER
 
             JSR     PRINTBUFFER
             BRA     LOOP
@@ -1043,12 +1084,48 @@ printLE:
 
             RTS
 
-    INCLUDE     'EAstuff.X68'           ; include effective address file
-    INCLUDE     'outputBuffer.X68'      ; include buffer file
 
+FINISHED:
+            LEA     FINISHEDMSG1,A1
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     FINISHEDMSG2,A1
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     FINISHEDMSG1,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR     PRINTBUFFER
+            BRA     EXIT
+
+
+               INCLUDE     'EAstuff.X68'           ; include effective address file
+               INCLUDE     'outputBuffer.X68'      ; include buffer file
+      
+            SIMHALT
 HT              EQU     $09
 CR              EQU     $0D
 LF              EQU     $0A
+
+
+CR              EQU     $0D
+LF              EQU     $0A
+
+NEWLINE             DC.B        CR,LF,0
+PARENTHESIS_1       DC.B        '(', 0
+PARENTHESIS_2       DC.B        ')', 0
+PLUS_SIGN           DC.B        '+', 0
+MINUS_SIGN          DC.B        '-', 0
+COMMA               DC.B        ',', 0
+DOLLAR_SIGN         DC.B        '$', 0
+POUND               DC.B        '#', 0
+SLASH               DC.B        '/', 0
+
+DATA_REG            DC.B        'D', 0
+ADD_REG             DC.B        'A', 0
+
+
+EAERRORMSG          DC.B        HT,'EA ERROR',CR,LF,0
 
 ; the following are string and character definitions
 
@@ -1059,21 +1136,28 @@ endb4start      DC.B    'End address is not after start address, try again.',CR,
 wronglength     DC.B    'Input was not 8 digits, try again.',CR,LF,'(TIP: add leading 0s if needed)',CR,LF,0
 overlapMsg      DC.B    'This overlaps with the disassembler, try again.',CR,LF,0
 
-Lmsg            DC.B    'L',HT,0
+Lmsg            DC.B    'L',HT,HT,0
+Wmsg            DC.B    'W',HT,HT,0
+Bmsg            DC.B    'B',HT,HT,0
 
-Bmsg            DC.B    'B',HT,0
+TABmsg          DC.B    HT,0
 
-UnknownSizemsg  DC.B    'UNKOWNSIZE',CR,LF,0
+
+
+welcomeMessageP1  DC.B    '*-----------------------------------------------------------',CR,LF,'* Title      : A disassembler',CR,LF,'* Written by : Jesse Llona, Ruby Kassala',CR,LF,'* Date       : I dont know the date. All I know now is assembly.',0
+welcomeMessageP2  DC.B  CR,LF,'* Description: It disassembles things',CR,LF,'*-----------------------------------------------------------',CR,LF,0  
+pressEnter      DC.B    '(press enter to continue)',0
+DATA            DC.B    HT,'DATA ',HT,HT,'$',0
 UNKNOWNmsg      DC.B    HT,'INVALED',CR,LF,0
 ADDQmsg         DC.B    HT,'ADDQ.',0
 ADDImsg         DC.B    HT,'ADDI.',0
 MOVEAmsg        DC.B    HT,'MOVEA.',0
 ADDAmsg         DC.B    HT,'ADDA.',0
 MOVEMmsg        DC.B    HT,'MOVEM.',0
-MOVEQmsg        DC.B    HT,'MOVEQ',HT,0
-MULSmsg         DC.B    HT,'MULS',HT,0
-DIVUmsg         DC.B    HT,'DIVU',HT,0
-LEAmsg          DC.B    HT,'LEA',HT,0
+MOVEQmsg        DC.B    HT,'MOVEQ ',HT,HT,0
+MULSmsg         DC.B    HT,'MULS ',HT,HT,0
+DIVUmsg         DC.B    HT,'DIVU ',HT,HT,0
+LEAmsg          DC.B    HT,'LEA  ',HT,HT,0
 CMPmsg          DC.B    HT,'CMP.',0
 CLRmsg          DC.B    HT,'CLR.',0
 ANDmsg          DC.B    HT,'AND.',0
@@ -1088,32 +1172,38 @@ ASLmsg          DC.B    HT,'ASL.',0
 RORmsg          DC.B    HT,'ROR.',0
 ROLmsg          DC.B    HT,'ROL.',0
 Bccmsg          DC.B    HT,'B',0
-JSRmsg          DC.B    HT,'JSR',HT,0
+JSRmsg          DC.B    HT,'JSR  ',HT,HT,0
 RTSmsg          DC.B    HT,'RTS',CR,LF,0
 NOPmsg          DC.B    HT,'NOP',0
-Wmsg            DC.B    'W',HT,0
-HImsg           DC.B    'HI',HT,0
-LSmsg           DC.B    'LS',HT,0
-CCmsg           DC.B    'CC',HT,0
-CSmsg           DC.B    'CS',HT,0
-NEmsg           DC.B    'NE',HT,0
-EQmsg           DC.B    'EQ',HT,0
-VCmsg           DC.B    'VC',HT,0
-VSmsg           DC.B    'VS',HT,0
-PLmsg           DC.B    'PL',HT,0
-MImsg           DC.B    'MI',HT,0
-GEmsg           DC.B    'GE',HT,0
-LTmsg           DC.B    'LT',HT,0
-GTmsg           DC.B    'GT',HT,0
-LEmsg           DC.B    'LE',HT,0
-RETURNATEND     DS.B        1
+HImsg           DC.B    'HI  ',HT,HT,0
+LSmsg           DC.B    'LS  ',HT,HT,0
+CCmsg           DC.B    'CC  ',HT,HT,0
+CSmsg           DC.B    'CS  ',HT,HT,0
+NEmsg           DC.B    'NE  ',HT,HT,0
+EQmsg           DC.B    'EQ  ',HT,HT,0
+VCmsg           DC.B    'VC  ',HT,HT,0
+VSmsg           DC.B    'VS  ',HT,HT,0
+PLmsg           DC.B    'PL  ',HT,HT,0
+MImsg           DC.B    'MI  ',HT,HT,0
+GEmsg           DC.B    'GE  ',HT,HT,0
+LTmsg           DC.B    'LT  ',HT,HT,0
+GTmsg           DC.B    'GT  ',HT,HT,0
+LEmsg           DC.B    'LE  ',HT,HT,0
+
+
+FINISHEDMSG1     DC.B    '*-----------------------------FINISHED!!!-------------------------------*',CR,LF,0
+FINISHEDMSG2     DC.B    'CONGRADULATIONS, YOU HAVE SUCCESFULLY SURVIVED WATCHING OUR DISSASEMBLER',CR,LF,'(AND ALSO HARDWARE, THATS A BIGGER DEAL) ENJOY SOME IMAGINARY COOKIES!!!!',CR,LF,0
+
+outputBuffer    DS.L    256
+outputPointer   DS.L    32
+RETURNATEND     DS.B        2
 endSpace        DS.L    32 
 startSpace      DS.L    32
 
 inputSpace      DS.L    64
 
-
-
+linesPrinted    DS.L    32
+    
 EXIT:
     END    START        ; last line of source
 
@@ -1136,7 +1226,13 @@ EXIT:
 
 
 
+
+
+
+
+
+
 *~Font name~Courier New~
 *~Font size~10~
-*~Tab type~1~
+*~Tab type~0~
 *~Tab size~4~
