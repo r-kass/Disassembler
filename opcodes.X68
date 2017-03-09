@@ -4,7 +4,7 @@
 * Date       : I don't know the date. All I know now is assembly.
 * Description: It disassembles things
 *-----------------------------------------------------------
-    ORG     $7000 ; this is where the test program will be loaded into memory
+    ORG     $7E00 ; this is where the test program will be loaded into memory
 START:
     LEA     WELCOMEMESSAGEP1,A1
     MOVE.B  #14,D0
@@ -42,6 +42,7 @@ MAIN
     ADDA.L      D1,A2             ; add D1 data to address 2
     JSR         ASCII2HEXP1       ; convert A2 to hex
     MOVEA.L     A3,A1             ; convert A1 to hex
+    CLR.L       D2
     JSR         ASCII2HEXP2
 
     CMP.L       #$1000,D2         ; compare D2 to 1000
@@ -68,6 +69,7 @@ noStartOverlap:
     ADDA.L      D1,A2             ; add D1 to A2
     JSR         ASCII2HEXP1       ; convert A2 to hex
     MOVEA.L     A3,A1
+    CLR.L       D2
     JSR         ASCII2HEXP2       ; convert A1 to hex
 
     
@@ -177,7 +179,7 @@ LOOP:
 
 
     ; check loop conditions
-    CMP         A3,A2
+    CMP.L       A3,A2
     BGE         FINISHED
 
     ; print the memory of the next command
@@ -668,7 +670,25 @@ printADDI:
             MOVE.W  (A2),D2
             ANDI.W  #$00C0,D2
             LSR.W   #6,D2
-            BRA     printADDISize     ; branch to print size
+            JSR     printADDISize     ; branch to print size
+            
+            LEA     COMMA,A1
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     startSpace,A2
+            MOVE.L  (A2),A2
+            MOVE.W  (A2),D2
+            JSR     GETLHS
+            
+            LEA     NEWLINE,A1
+            JSR     MOVEA1TOBUFFER
+            
+            JSR     PRINTBUFFER
+            
+            ADD.L   #2,startSpace
+            
+            BRA     LOOP
+            
 
 printADDISIZE:
             CMP.W   #$0000,D2
@@ -922,17 +942,72 @@ printB:
 printLaddi:
             LEA     Lmsg,A1
             JSR     MOVEA1TOBUFFER
-            BRA     PRINTADDILONG
+            MOVE.L  #32,BIN2A_COUNT
+            
+            LEA     DOLLAR_SIGN,A1
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     POUND,A1
+            JSR     MOVEA1TOBUFFER
+            
+            CLR.L   D2
+            ADD.L   #2,A2
+            MOVE.L  (A2),D2
+            MOVE.L  D2,BIN2A_VAL
+            JSR     BIN2A_CONVERT
+            SUB.L   #2,A2
+            
+            LEA     BIN2A_BUFFER,A1
+            JSR     MOVEA1TOBUFFER
+            
+            RTS
 
 printWaddi:
             LEA     Wmsg,A1
             JSR     MOVEA1TOBUFFER
-            BRA     PRINTADDIWORD
+            MOVE.L  #16,BIN2A_COUNT
+            
+            LEA     DOLLAR_SIGN,A1
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     POUND,A1
+            JSR     MOVEA1TOBUFFER
+            
+            CLR.L   D2
+            ADD.L   #2,A2
+            MOVE.W  (A2),D2
+            MOVE.L  D2,BIN2A_VAL
+            JSR     BIN2A_CONVERT
+            SUB.L   #2,A2
+            
+            LEA     BIN2A_BUFFER,A1
+            JSR     MOVEA1TOBUFFER
+            
+            RTS
 
 printBaddi:
             LEA     Bmsg,A1
             JSR     MOVEA1TOBUFFER
-            BRA     PRINTADDIWORD
+            MOVE.L  #16,BIN2A_COUNT
+            
+            LEA     DOLLAR_SIGN,A1
+            JSR     MOVEA1TOBUFFER
+            
+            LEA     POUND,A1
+            JSR     MOVEA1TOBUFFER
+            
+            CLR.L   D2
+            ADD.L   #2,A2
+            MOVE.W  (A2),D2
+            MOVE.L  D2,BIN2A_VAL
+            JSR     BIN2A_CONVERT
+            
+            SUB.L   #2,A2
+            
+            LEA     BIN2A_BUFFER,A1
+            JSR     MOVEA1TOBUFFER
+            
+            RTS
 
 ; the following uses bit masks to compare and decode condition
 decodeCondition:
@@ -1169,7 +1244,7 @@ TABmsg          DC.B    HT,0
 welcomeMessageP1  DC.B    '*-----------------------------------------------------------',CR,LF,'* Title      : A disassembler',CR,LF,'* Written by : Jesse Llona, Ruby Kassala',CR,LF,'* Date       : I dont know the date. All I know now is assembly.',0
 welcomeMessageP2  DC.B  CR,LF,'* Description: It disassembles things',CR,LF,'*-----------------------------------------------------------',CR,LF,0  
 pressEnter      DC.B    '(press enter to continue)',0
-DATA            DC.B    HT,'DATA ',HT,HT,'$',0
+DATA            DC.B    HT,'DATA  ',HT,HT,'$',0
 UNKNOWNmsg      DC.B    HT,'INVALED',CR,LF,0
 ADDQmsg         DC.B    HT,'ADDQ.',0
 ADDImsg         DC.B    HT,'ADDI.',0
@@ -1228,6 +1303,8 @@ linesPrinted    DS.L    32
     
 EXIT:
     END    START        ; last line of source
+
+
 
 
 
