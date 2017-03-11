@@ -1289,7 +1289,7 @@ LEmsg           DC.B    'LE  ',HT,HT,0
 GoAgain         DC.B    'Would you like to go again? (y/n)',CR,LF,0
 
 FINISHEDMSG1     DC.B    '*-----------------------------FINISHED!!!-------------------------------*',CR,LF,0
-FINISHEDMSG2     DC.B    'CONGRADULATIONS, YOU HAVE SUCCESFULLY SURVIVED WATCHING OUR DISSASEMBLER',CR,LF,'(AND ALSO HARDWARE, THATS A BIGGER DEAL) ENJOY SOME IMAGINARY COOKIES!!!!',CR,LF,0
+FINISHEDMSG2     DC.B    'CONGRATULATIONS, YOU HAVE SUCCESFULLY SURVIVED WATCHING OUR DISASSEMBLER',CR,LF,'(AND ALSO HARDWARE, THATS A BIGGER DEAL) ENJOY SOME IMAGINARY COOKIES!!!!',CR,LF,0
 
 outputBuffer    DS.L    256
 outputPointer   DS.L    32
@@ -1303,6 +1303,7 @@ linesPrinted    DS.L    32
     
 EXIT:
     END    START        ; last line of source
+
 
 
 
