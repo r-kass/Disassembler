@@ -859,7 +859,11 @@ printBcc:
             JSR     MOVEA1TOBUFFER
 
             ADDA.L  #2,A2             ; increment A2 by two
-            MOVE.W  (A2),D3           ; load data in A2 to D3
+            MOVE.L  (A2),D3           ; load data in A2 to D3
+            LSL.L   #8,D3
+            LSL.L   #8,D3
+            LSR.L   #8,D3
+            LSR.L   #8,D3
             MOVE.L  D3,BIN2A_VAL      ; convert D3
             MOVE.L  #16,BIN2A_COUNT   ; number of bits to convert
             JSR     BIN2A_CONVERT
@@ -1012,10 +1016,10 @@ printBaddi:
 ; the following uses bit masks to compare and decode condition
 decodeCondition:
 
-            MOVEM   A2,-(A7)
+            MOVEM.L   A2,-(A7)
             LEA     startSpace,A2
             ADD.L   #2,(A2)
-            MOVEM   (A7)+,A2
+            MOVEM.L   (A7)+,A2
 
             MOVE.W  (A2),D2
             ANDI.W  #$0F00,D2
@@ -1303,6 +1307,7 @@ linesPrinted    DS.L    32
     
 EXIT:
     END    START        ; last line of source
+
 
 
 

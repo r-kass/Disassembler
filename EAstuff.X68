@@ -590,10 +590,10 @@ ROLBACK4:
 
 BIMMED: ; does same as word
 WORDIMMED
-      MOVEM   A2,-(A7)
+      MOVEM.L   A2,-(A7)
       LEA     startSpace,A2
       ADD.L   #2,(A2)
-      MOVEM   (A7)+,A2
+      MOVEM.L   (A7)+,A2
 
       ADDA.W  #2, A2           ;  read following word from memory
       CLR.L   D6
@@ -635,10 +635,10 @@ CONTINWORDIMMED
 
 
 LONGIMMED
-      MOVEM   A2,-(A7)
+      MOVEM.L   A2,-(A7)
       LEA     startSpace,A2
       ADD.L   #4,(A2)       ; read following long from memory
-      MOVEM   (A7)+,A2
+      MOVEM.L   (A7)+,A2
 
       ADDA.W  #2, A2        ; move along A2
       CLR.L   D6
@@ -687,10 +687,10 @@ CONTINLONGIMMED
 
 PRINTIMMEDA:
 
-      MOVEM   A2,-(A7)            ; predecrement A7 before movem
+      MOVEM.L   A2,-(A7)            ; predecrement A7 before movem
       LEA     startSpace,A2       ; load start to A2
       ADD.L   D3,(A2)
-      MOVEM   (A7)+,A2
+      MOVEM.L   (A7)+,A2
 
       SUB.L   #2,A2
       LEA     ADD_REG,A1          ; to print A
@@ -725,10 +725,10 @@ PRINTALONGIMMED:
       LEA      BIN2A_BUFFER,A1
       JSR     MOVEA1TOBUFFER
 
-      MOVEM     A2,-(A7)
+      MOVEM.L     A2,-(A7)
       LEA       startSpace,A2
       ADD.L     #2,(A2)         ; add 2 to address of A2
-      MOVEM     (A7)+,A2
+      MOVEM.L     (A7)+,A2
 
       BRA EAEXIT
 
@@ -752,10 +752,10 @@ DECODEIMEDREGS:
 
 ; print immediate data with dollar sign using buffer
 PRINTMEMADD
-      MOVEM     A2,-(A7)
+      MOVEM.L     A2,-(A7)
       LEA       startSpace,A2
       ADD.L     #2,(A2)
-      MOVEM     (A7)+,A2
+      MOVEM.L     (A7)+,A2
 
       LEA       DOLLAR_SIGN,A1
       JSR       MOVEA1TOBUFFER
@@ -779,10 +779,10 @@ PRINTMEMADD
 
 ; prints longword of data
 PRINTMEMADDLONG:
-      MOVEM     A2,-(A7)
+      MOVEM.L     A2,-(A7)
       LEA       startSpace,A2
       ADD.L     #2,(A2)
-      MOVEM     (A7)+,A2
+      MOVEM.L     (A7)+,A2
 
       ADD.L     D3,A2
       ADD.L     #4,A2
@@ -925,10 +925,10 @@ RETAQS
 
 
 SHORT000 ; branch
-      MOVEM   A2,-(A7)
+      MOVEM.L   A2,-(A7)
       LEA     startSpace,A2
       ADD.L   #2,(A2)
-      MOVEM   (A7)+,A2
+      MOVEM.L   (A7)+,A2
 
       CMP.B   #3,D7
       BEQ     ADDQSHORT000
@@ -1053,10 +1053,10 @@ RETAQL
 
 
 LONG001 ; branch
-      MOVEM     A2,-(A7)
+      MOVEM.L     A2,-(A7)
       LEA       startSpace,A2
       ADD.L     #4,(A2)
-      MOVEM     (A7)+,A2
+      MOVEM.L     (A7)+,A2
 
       CMP.B   #3,D7
       BEQ     ADDQLONG001
@@ -1447,10 +1447,10 @@ MOVEQEA: ;special case
 
 PRINTADDIWORD:
       MOVEM.L D0-D7/A1/A3-A6,-(A7) ; back up all the things
-      MOVEM   A2,-(A7)
+      MOVEM.L   A2,-(A7)
       LEA     startSpace,A2
       ADD.L   #2,(A2)
-      MOVEM   (A7)+,A2
+      MOVEM.L   (A7)+,A2
 
       MOVE.L  (A2),BIN2A_VAL
       MOVE.L  #16, BIN2A_COUNT
@@ -1480,10 +1480,10 @@ PRINTADDIWORD:
 
 PRINTADDILONG:
       MOVEM.L D0-D7/A1/A3-A6,-(A7) ; back up all the things
-      MOVEM   A2,-(A7)
+      MOVEM.L   A2,-(A7)
       LEA     startSpace,A2
       ADD.L   #4,(A2)
-      MOVEM   (A7)+,A2
+      MOVEM.L   (A7)+,A2
 
       ADDA.W  #2,A2                 ; increment to address reg
       MOVE.L  (A2),BIN2A_VAL
@@ -1748,10 +1748,10 @@ ABSORIMD:
        BEQ      ABS100     ; absolute mode 100
        BRA      EAFAILED
 ABS000
-       MOVEM    A2,-(A7)
+       MOVEM.L    A2,-(A7)
        LEA      startSpace,A2   ; load start to A2
        ADD.L    #2,(A2)
-       MOVEM    (A7)+,A2
+       MOVEM.L    (A7)+,A2
 
        ;ADD.L    D5,A2
        ADD.L    #2,A2
@@ -1769,10 +1769,10 @@ ABS000
        MOVEM.L  (A7)+, D0-D7/A0-A6 ; push back to stack pointer
        RTS
 ABS001
-       MOVEM    A2,-(A7)
+       MOVEM.L    A2,-(A7)
        LEA      startSpace,A2
        ADD.L    #4,(A2)
-       MOVEM    (A7)+,A2
+       MOVEM.L    (A7)+,A2
 
        ;ADD.L    D5,A2
        ADD.L    #2,A2
@@ -1790,12 +1790,12 @@ ABS001
        MOVEM.L  (A7)+, D0-D7/A0-A6
        RTS
 ABS100:
-       MOVEM    D1/A2,-(A7)
+       MOVEM.L    D1/A2,-(A7)
        MOVE.L   #2,D1
        ADD.L    D5,D1
        LEA      startSpace,A2
        ADD.L    D1,(A2)
-       MOVEM    (A7)+,D1/A2
+       MOVEM.L    (A7)+,D1/A2
 
        LEA      POUND,A1
        JSR      MOVEA1TOBUFFER
@@ -1863,6 +1863,7 @@ LF                  EQU         $0A
 
   ;  END    START        ; last line of source
 *~Font name~Courier New~
+
 
 
 
